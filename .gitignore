@@ -1,6 +1,6 @@
-.init.o.cmd
-.kix.ko.cmd
-.kix.mod.o.cmd
-.kix.o.cmd
+*.cmd
+*.order
+*.symvers
+*.mod.c
 *.o
 *.ko
