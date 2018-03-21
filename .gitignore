@@ -1,0 +1,6 @@
+.init.o.cmd
+.kix.ko.cmd
+.kix.mod.o.cmd
+.kix.o.cmd
+*.o
+*.ko
