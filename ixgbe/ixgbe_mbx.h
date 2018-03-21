@@ -144,7 +144,7 @@ s32 ixgbe_check_for_msg(struct ixgbe_hw *, u16);
 s32 ixgbe_check_for_ack(struct ixgbe_hw *, u16);
 s32 ixgbe_check_for_rst(struct ixgbe_hw *, u16);
 void ixgbe_init_mbx_ops_generic(struct ixgbe_hw *hw);
-s32 ixgbe_init_mbx_params_vf(struct ixgbe_hw *);
+void ixgbe_init_mbx_params_vf(struct ixgbe_hw *);
 void ixgbe_init_mbx_params_pf(struct ixgbe_hw *);
 
 #endif /* _IXGBE_MBX_H_ */

@@ -31,8 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-#include <linux/delay.h>
-
 #include "ixgbe_api.h"
 #include "ixgbe_type.h"
 #include "ixgbe_vf.h"

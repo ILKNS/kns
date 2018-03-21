@@ -31,8 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ***************************************************************************/
 
-#include <asm/delay.h>
-
 #include "ixgbe_common.h"
 #include "ixgbe_phy.h"
 #include "ixgbe_api.h"

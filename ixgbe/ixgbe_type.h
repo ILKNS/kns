@@ -32,6 +32,7 @@
 #include <linux/types.h>
 #include <linux/mdio.h>
 #include <linux/netdevice.h>
+#include <linux/delay.h>
 
 /* Device IDs */
 #define IXGBE_DEV_ID_82598               0x10B6
@@ -2501,27 +2502,27 @@ enum {
 /* Multicast bit mask */
 #define IXGBE_MCSTCTRL_MFE      0x4
 
-// /* Number of Transmit and Receive Descriptors must be a multiple of 8 */
-// #define IXGBE_REQ_TX_DESCRIPTOR_MULTIPLE  8
-// #define IXGBE_REQ_RX_DESCRIPTOR_MULTIPLE  8
-// #define IXGBE_REQ_TX_BUFFER_GRANULARITY   1024
+/* Number of Transmit and Receive Descriptors must be a multiple of 8 */
+#define IXGBE_REQ_TX_DESCRIPTOR_MULTIPLE  8
+#define IXGBE_REQ_RX_DESCRIPTOR_MULTIPLE  8
+#define IXGBE_REQ_TX_BUFFER_GRANULARITY   1024
 
-// /* Vlan-specific macros */
-// #define IXGBE_RX_DESC_SPECIAL_VLAN_MASK  0x0FFF /* VLAN ID in lower 12 bits */
-// #define IXGBE_RX_DESC_SPECIAL_PRI_MASK   0xE000 /* Priority in upper 3 bits */
-// #define IXGBE_RX_DESC_SPECIAL_PRI_SHIFT  0x000D /* Priority in upper 3 of 16 */
-// #define IXGBE_TX_DESC_SPECIAL_PRI_SHIFT  IXGBE_RX_DESC_SPECIAL_PRI_SHIFT
+/* Vlan-specific macros */
+#define IXGBE_RX_DESC_SPECIAL_VLAN_MASK  0x0FFF /* VLAN ID in lower 12 bits */
+#define IXGBE_RX_DESC_SPECIAL_PRI_MASK   0xE000 /* Priority in upper 3 bits */
+#define IXGBE_RX_DESC_SPECIAL_PRI_SHIFT  0x000D /* Priority in upper 3 of 16 */
+#define IXGBE_TX_DESC_SPECIAL_PRI_SHIFT  IXGBE_RX_DESC_SPECIAL_PRI_SHIFT
 
-// /* SR-IOV specific macros */
-// #define IXGBE_MBVFICR_INDEX(vf_number)   (vf_number >> 4)
-// #define IXGBE_MBVFICR(_i)		(0x00710 + ((_i) * 4))
-// #define IXGBE_VFLRE(_i)		((((_i) & 1) ? 0x001C0 : 0x00600))
-// #define IXGBE_VFLREC(_i)		(0x00700 + ((_i) * 4))
-// /* Translated register #defines */
-// #define IXGBE_PVFTDH(P)		(0x06010 + (0x40 * (P)))
-// #define IXGBE_PVFTDT(P)		(0x06018 + (0x40 * (P)))
-// #define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
-// #define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
+/* SR-IOV specific macros */
+#define IXGBE_MBVFICR_INDEX(vf_number)   (vf_number >> 4)
+#define IXGBE_MBVFICR(_i)		(0x00710 + ((_i) * 4))
+#define IXGBE_VFLRE(_i)		((((_i) & 1) ? 0x001C0 : 0x00600))
+#define IXGBE_VFLREC(_i)		(0x00700 + ((_i) * 4))
+/* Translated register #defines */
+#define IXGBE_PVFTDH(P)		(0x06010 + (0x40 * (P)))
+#define IXGBE_PVFTDT(P)		(0x06018 + (0x40 * (P)))
+#define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
+#define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
 
 #define IXGBE_PVFTDWBALn(q_per_pool, vf_number, vf_q_index) \
 		(IXGBE_PVFTDWBAL((q_per_pool)*(vf_number) + (vf_q_index)))
@@ -3596,7 +3597,7 @@ struct ixgbe_phy_info {
 #include "ixgbe_mbx.h"
 
 struct ixgbe_mbx_operations {
-	s32 (*init_params)(struct ixgbe_hw *hw);
+	void (*init_params)(struct ixgbe_hw *hw);
 	s32 (*read)(struct ixgbe_hw *, u32 *, u16,  u16);
 	s32 (*write)(struct ixgbe_hw *, u32 *, u16, u16);
 	s32 (*read_posted)(struct ixgbe_hw *, u32 *, u16,  u16);
