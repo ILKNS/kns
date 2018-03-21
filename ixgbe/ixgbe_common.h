@@ -82,9 +82,9 @@ struct ixgbe_pba {
 // s32 ixgbe_start_hw_generic(struct ixgbe_hw *hw);
 // s32 ixgbe_start_hw_gen2(struct ixgbe_hw *hw);
 // s32 ixgbe_clear_hw_cntrs_generic(struct ixgbe_hw *hw);
-// s32 ixgbe_read_pba_num_generic(struct ixgbe_hw *hw, u32 *pba_num);
-// s32 ixgbe_read_pba_string_generic(struct ixgbe_hw *hw, u8 *pba_num,
-// 				  u32 pba_num_size);
+s32 ixgbe_read_pba_num_generic(struct ixgbe_hw *hw, u32 *pba_num);
+s32 ixgbe_read_pba_string_generic(struct ixgbe_hw *hw, u8 *pba_num,
+				  u32 pba_num_size);
 // s32 ixgbe_read_pba_raw(struct ixgbe_hw *hw, u16 *eeprom_buf,
 // 		       u32 eeprom_buf_size, u16 max_pba_block_size,
 // 		       struct ixgbe_pba *pba);
@@ -177,7 +177,7 @@ s32 ixgbe_find_vlvf_slot(struct ixgbe_hw *hw, u32 vlan);
 // 			     int strategy);
 // void ixgbe_enable_relaxed_ordering_gen2(struct ixgbe_hw *hw);
 // s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
-// 				 u8 build, u8 ver);
+// 				 u8 build, u8 ver, u16 len, const char *str);
 // void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
 
 // extern s32 ixgbe_reset_pipeline_82599(struct ixgbe_hw *hw);

@@ -67,22 +67,20 @@ s32 ixgbe_write_phy_reg(struct ixgbe_hw *hw, u32 reg_addr, u32 device_type,
 			u16 phy_data);
 
 s32 ixgbe_setup_phy_link(struct ixgbe_hw *hw);
-s32 ixgbe_check_phy_link(struct ixgbe_hw *hw,
-			 ixgbe_link_speed *speed,
-			 int *link_up);
+s32 ixgbe_check_phy_link(struct ixgbe_hw *hw, ixgbe_link_speed *speed, bool *link_up);
 s32 ixgbe_setup_phy_link_speed(struct ixgbe_hw *hw,
 			       ixgbe_link_speed speed,
-			       int autoneg,
-			       int autoneg_wait_to_complete);
+			       bool autoneg,
+			       bool autoneg_wait_to_complete);
 void ixgbe_disable_tx_laser(struct ixgbe_hw *hw);
 void ixgbe_enable_tx_laser(struct ixgbe_hw *hw);
 void ixgbe_flap_tx_laser(struct ixgbe_hw *hw);
 s32 ixgbe_setup_link(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-		     int autoneg, int autoneg_wait_to_complete);
+		     bool autoneg);
 s32 ixgbe_check_link(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
-		     int *link_up, int link_up_wait_to_complete);
+		     bool *link_up, bool link_up_wait_to_complete);
 s32 ixgbe_get_link_capabilities(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
-				int *autoneg);
+				bool *autoneg);
 s32 ixgbe_led_on(struct ixgbe_hw *hw, u32 index);
 s32 ixgbe_led_off(struct ixgbe_hw *hw, u32 index);
 s32 ixgbe_blink_led_start(struct ixgbe_hw *hw, u32 index);
@@ -112,7 +110,7 @@ s32 ixgbe_update_uc_addr_list(struct ixgbe_hw *hw, u8 *addr_list,
 			      u32 addr_count, ixgbe_mc_addr_itr func);
 s32 ixgbe_update_mc_addr_list(struct ixgbe_hw *hw, u8 *mc_addr_list,
 			      u32 mc_addr_count, ixgbe_mc_addr_itr func,
-			      int clear);
+			      bool clear);
 void ixgbe_add_uc_addr(struct ixgbe_hw *hw, u8 *addr_list, u32 vmdq);
 s32 ixgbe_enable_mc(struct ixgbe_hw *hw);
 s32 ixgbe_disable_mc(struct ixgbe_hw *hw);
@@ -123,7 +121,7 @@ s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
 		   int vlan_on, int *vfta_changed);
 s32 ixgbe_fc_enable(struct ixgbe_hw *hw);
 s32 ixgbe_set_fw_drv_ver(struct ixgbe_hw *hw, u8 maj, u8 min, u8 build,
-			 u8 ver);
+			 u8 ver, u16 len, const char* str);
 void ixgbe_set_mta(struct ixgbe_hw *hw, u8 *mc_addr);
 s32 ixgbe_get_phy_firmware_version(struct ixgbe_hw *hw,
 				   u16 *firmware_version);

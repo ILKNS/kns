@@ -735,10 +735,11 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
 {
 	struct ixgbe_hw *hw =
 		IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-	int err, link_up = 0, negotiate = 0;
+	int err;
 	uint32_t speed = 0;
 	int mask = 0;
 	int status;
+	bool link_up = 0, negotiate = 0;
 
 	/* IXGBE devices don't support half duplex */
 	if ((dev->data->dev_conf.link_duplex != ETH_LINK_AUTONEG_DUPLEX) &&
@@ -820,7 +821,7 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
 		goto error;
 	}
 
-	err = ixgbe_setup_link(hw, speed, negotiate, link_up);
+	err = ixgbe_setup_link(hw, speed, negotiate);
 	if (err)
 		goto error;
 
@@ -1140,7 +1141,7 @@ ixgbe_dev_link_update(struct rte_eth_dev *dev, int wait_to_complete)
 	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
 	struct rte_eth_link link, old;
 	ixgbe_link_speed link_speed;
-	int link_up;
+	bool link_up;
 	int diag;
 
 	link.link_status = 0;

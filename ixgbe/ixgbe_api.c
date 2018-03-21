@@ -256,18 +256,18 @@ s32 ixgbe_get_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
 			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
 }
 
-/**
- *  ixgbe_set_san_mac_addr - Write a SAN MAC address
- *  @hw: pointer to hardware structure
- *  @san_mac_addr: SAN MAC address
- *
- *  Writes A SAN MAC address to the EEPROM.
- **/
-s32 ixgbe_set_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.set_san_mac_addr,
-			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
-}
+// /**
+//  *  ixgbe_set_san_mac_addr - Write a SAN MAC address
+//  *  @hw: pointer to hardware structure
+//  *  @san_mac_addr: SAN MAC address
+//  *
+//  *  Writes A SAN MAC address to the EEPROM.
+//  **/
+// s32 ixgbe_set_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.set_san_mac_addr,
+// 			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_get_device_caps - Get additional device capabilities
@@ -306,12 +306,12 @@ s32 ixgbe_get_wwn_prefix(struct ixgbe_hw *hw, u16 *wwnn_prefix,
  *
  *  This function will read the FCOE boot status from the iSCSI FCOE block
  **/
-s32 ixgbe_get_fcoe_boot_status(struct ixgbe_hw *hw, u16 *bs)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.get_fcoe_boot_status,
-			       (hw, bs),
-			       IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_get_fcoe_boot_status(struct ixgbe_hw *hw, u16 *bs)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.get_fcoe_boot_status,
+// 			       (hw, bs),
+// 			       IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_get_bus_info - Set PCI bus info
@@ -430,15 +430,15 @@ s32 ixgbe_reset_phy(struct ixgbe_hw *hw)
  *  @hw: pointer to hardware structure
  *  @firmware_version: pointer to firmware version
  **/
-s32 ixgbe_get_phy_firmware_version(struct ixgbe_hw *hw, u16 *firmware_version)
-{
-	s32 status = IXGBE_SUCCESS;
+// s32 ixgbe_get_phy_firmware_version(struct ixgbe_hw *hw, u16 *firmware_version)
+// {
+// 	s32 status = IXGBE_SUCCESS;
 
-	status = ixgbe_call_func(hw, hw->phy.ops.get_firmware_version,
-				 (hw, firmware_version),
-				 IXGBE_NOT_IMPLEMENTED);
-	return status;
-}
+// 	status = ixgbe_call_func(hw, hw->phy.ops.get_firmware_version,
+// 				 (hw, firmware_version),
+// 				 IXGBE_NOT_IMPLEMENTED);
+// 	return status;
+// }
 
 /**
  *  ixgbe_read_phy_reg - Read PHY register
@@ -495,8 +495,7 @@ s32 ixgbe_setup_phy_link(struct ixgbe_hw *hw)
  *  Reads a PHY register to determine if link is up and the current speed for
  *  the PHY.
  **/
-s32 ixgbe_check_phy_link(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
-			 bool *link_up)
+s32 ixgbe_check_phy_link(struct ixgbe_hw *hw, ixgbe_link_speed *speed, bool *link_up)
 {
 	return ixgbe_call_func(hw, hw->phy.ops.check_link, (hw, speed,
 			       link_up), IXGBE_NOT_IMPLEMENTED);
@@ -581,11 +580,10 @@ void ixgbe_flap_tx_laser(struct ixgbe_hw *hw)
  *  Performs autonegotiation if needed.
  **/
 s32 ixgbe_setup_link(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-		     bool autoneg,
-		     bool autoneg_wait_to_complete)
+		     bool autoneg)
 {
 	return ixgbe_call_func(hw, hw->mac.ops.setup_link, (hw, speed,
-			       autoneg, autoneg_wait_to_complete),
+			       autoneg),
 			       IXGBE_NOT_IMPLEMENTED);
 }
 
@@ -765,12 +763,12 @@ s32 ixgbe_update_eeprom_checksum(struct ixgbe_hw *hw)
  *  Puts an ethernet address into a receive address register, or
  *  finds the rar that it is aleady in; adds to the pool list
  **/
-s32 ixgbe_insert_mac_addr(struct ixgbe_hw *hw, u8 *addr, u32 vmdq)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.insert_mac_addr,
-			       (hw, addr, vmdq),
-			       IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_insert_mac_addr(struct ixgbe_hw *hw, u8 *addr, u32 vmdq)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.insert_mac_addr,
+// 			       (hw, addr, vmdq),
+// 			       IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_set_rar - Set Rx address register
@@ -872,13 +870,13 @@ u32 ixgbe_get_num_rx_addrs(struct ixgbe_hw *hw)
  *  receive address registers. Uses unused receive address registers for the
  *  first secondary addresses, and falls back to promiscuous mode as needed.
  **/
-s32 ixgbe_update_uc_addr_list(struct ixgbe_hw *hw, u8 *addr_list,
-			      u32 addr_count, ixgbe_mc_addr_itr func)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.update_uc_addr_list, (hw,
-			       addr_list, addr_count, func),
-			       IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_update_uc_addr_list(struct ixgbe_hw *hw, u8 *addr_list,
+// 			      u32 addr_count, ixgbe_mc_addr_itr func)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.update_uc_addr_list, (hw,
+// 			       addr_list, addr_count, func),
+// 			       IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_update_mc_addr_list - Updates the MAC's list of multicast addresses
@@ -946,11 +944,11 @@ s32 ixgbe_clear_vfta(struct ixgbe_hw *hw)
  *
  *  Turn on/off specified VLAN in the VLAN filter table.
  **/
-s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.set_vfta, (hw, vlan, vind,
-			       vlan_on), IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.set_vfta, (hw, vlan, vind,
+// 			       vlan_on), IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_set_vlvf - Set VLAN Pool Filter
@@ -963,12 +961,12 @@ s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on)
  *
  *  Turn on/off specified bit in VLVF table.
  **/
-s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on,
-		    bool *vfta_changed)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.set_vlvf, (hw, vlan, vind,
-			       vlan_on, vfta_changed), IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on,
+// 		    bool *vfta_changed)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.set_vlvf, (hw, vlan, vind,
+// 			       vlan_on, vfta_changed), IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_fc_enable - Enable flow control
@@ -991,10 +989,10 @@ s32 ixgbe_fc_enable(struct ixgbe_hw *hw)
  * @ver: driver version number to be sent to firmware
  **/
 s32 ixgbe_set_fw_drv_ver(struct ixgbe_hw *hw, u8 maj, u8 min, u8 build,
-			 u8 ver)
+			 u8 ver, u16 len, const char *str)
 {
 	return ixgbe_call_func(hw, hw->mac.ops.set_fw_drv_ver, (hw, maj, min,
-			       build, ver), IXGBE_NOT_IMPLEMENTED);
+			       build, ver, len, str), IXGBE_NOT_IMPLEMENTED);
 }
 
 
@@ -1107,11 +1105,11 @@ s32 ixgbe_read_i2c_eeprom(struct ixgbe_hw *hw, u8 byte_offset, u8 *eeprom_data)
  *
  *  Determines physical layer capabilities of the current configuration.
  **/
-u32 ixgbe_get_supported_physical_layer(struct ixgbe_hw *hw)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.get_supported_physical_layer,
-			       (hw), IXGBE_PHYSICAL_LAYER_UNKNOWN);
-}
+// u32 ixgbe_get_supported_physical_layer(struct ixgbe_hw *hw)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.get_supported_physical_layer,
+// 			       (hw), IXGBE_PHYSICAL_LAYER_UNKNOWN);
+// }
 
 /**
  *  ixgbe_enable_rx_dma - Enables Rx DMA unit, dependent on device specifics
@@ -1132,11 +1130,11 @@ s32 ixgbe_enable_rx_dma(struct ixgbe_hw *hw, u32 regval)
  *
  *  Stops the receive data path.
  **/
-s32 ixgbe_disable_sec_rx_path(struct ixgbe_hw *hw)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.disable_sec_rx_path,
-				(hw), IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_disable_sec_rx_path(struct ixgbe_hw *hw)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.disable_sec_rx_path,
+// 				(hw), IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_enable_sec_rx_path - Enables the receive data path
@@ -1144,11 +1142,11 @@ s32 ixgbe_disable_sec_rx_path(struct ixgbe_hw *hw)
  *
  *  Enables the receive data path.
  **/
-s32 ixgbe_enable_sec_rx_path(struct ixgbe_hw *hw)
-{
-	return ixgbe_call_func(hw, hw->mac.ops.enable_sec_rx_path,
-				(hw), IXGBE_NOT_IMPLEMENTED);
-}
+// s32 ixgbe_enable_sec_rx_path(struct ixgbe_hw *hw)
+// {
+// 	return ixgbe_call_func(hw, hw->mac.ops.enable_sec_rx_path,
+// 				(hw), IXGBE_NOT_IMPLEMENTED);
+// }
 
 /**
  *  ixgbe_acquire_swfw_semaphore - Acquire SWFW semaphore
