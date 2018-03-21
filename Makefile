@@ -16,7 +16,6 @@ all: module
 .PHONY: all
 
 module:
-	@echo $(OBJS)
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 endif

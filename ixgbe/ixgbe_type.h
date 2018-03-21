@@ -2039,119 +2039,121 @@ enum {
 #define IXGBE_PBANUM1_PTR		0x16
 #define IXGBE_FREE_SPACE_PTR		0X3E
 
-// /* External Thermal Sensor Config */
-// #define IXGBE_ETS_CFG                   0x26
-// #define IXGBE_ETS_LTHRES_DELTA_MASK     0x07C0
-// #define IXGBE_ETS_LTHRES_DELTA_SHIFT    6
-// #define IXGBE_ETS_TYPE_MASK             0x0038
-// #define IXGBE_ETS_TYPE_SHIFT            3
-// #define IXGBE_ETS_TYPE_EMC              0x000
-// #define IXGBE_ETS_TYPE_EMC_SHIFTED      0x000
-// #define IXGBE_ETS_NUM_SENSORS_MASK      0x0007
-// #define IXGBE_ETS_DATA_LOC_MASK         0x3C00
-// #define IXGBE_ETS_DATA_LOC_SHIFT        10
-// #define IXGBE_ETS_DATA_INDEX_MASK       0x0300
-// #define IXGBE_ETS_DATA_INDEX_SHIFT      8
-// #define IXGBE_ETS_DATA_HTHRESH_MASK     0x00FF
+#define IXGBE_ETH_LENGTH_OF_ADDRESS	6
 
-// #define IXGBE_SAN_MAC_ADDR_PTR  0x28
-// #define IXGBE_DEVICE_CAPS       0x2C
-// #define IXGBE_SERIAL_NUMBER_MAC_ADDR 0x11
-// #define IXGBE_PCIE_MSIX_82599_CAPS  0x72
-// #define IXGBE_MAX_MSIX_VECTORS_82599	0x40
-// #define IXGBE_PCIE_MSIX_82598_CAPS  0x62
-// #define IXGBE_MAX_MSIX_VECTORS_82598	0x13
+/* External Thermal Sensor Config */
+#define IXGBE_ETS_CFG                   0x26
+#define IXGBE_ETS_LTHRES_DELTA_MASK     0x07C0
+#define IXGBE_ETS_LTHRES_DELTA_SHIFT    6
+#define IXGBE_ETS_TYPE_MASK             0x0038
+#define IXGBE_ETS_TYPE_SHIFT            3
+#define IXGBE_ETS_TYPE_EMC              0x000
+#define IXGBE_ETS_TYPE_EMC_SHIFTED      0x000
+#define IXGBE_ETS_NUM_SENSORS_MASK      0x0007
+#define IXGBE_ETS_DATA_LOC_MASK         0x3C00
+#define IXGBE_ETS_DATA_LOC_SHIFT        10
+#define IXGBE_ETS_DATA_INDEX_MASK       0x0300
+#define IXGBE_ETS_DATA_INDEX_SHIFT      8
+#define IXGBE_ETS_DATA_HTHRESH_MASK     0x00FF
 
-// /* MSI-X capability fields masks */
-// #define IXGBE_PCIE_MSIX_TBL_SZ_MASK     0x7FF
+#define IXGBE_SAN_MAC_ADDR_PTR  0x28
+#define IXGBE_DEVICE_CAPS       0x2C
+#define IXGBE_SERIAL_NUMBER_MAC_ADDR 0x11
+#define IXGBE_PCIE_MSIX_82599_CAPS  0x72
+#define IXGBE_MAX_MSIX_VECTORS_82599	0x40
+#define IXGBE_PCIE_MSIX_82598_CAPS  0x62
+#define IXGBE_MAX_MSIX_VECTORS_82598	0x13
 
-// /* Legacy EEPROM word offsets */
-// #define IXGBE_ISCSI_BOOT_CAPS           0x0033
-// #define IXGBE_ISCSI_SETUP_PORT_0        0x0030
-// #define IXGBE_ISCSI_SETUP_PORT_1        0x0034
+/* MSI-X capability fields masks */
+#define IXGBE_PCIE_MSIX_TBL_SZ_MASK     0x7FF
 
-// /* EEPROM Commands - SPI */
-// #define IXGBE_EEPROM_MAX_RETRY_SPI      5000 /* Max wait 5ms for RDY signal */
-// #define IXGBE_EEPROM_STATUS_RDY_SPI     0x01
-// #define IXGBE_EEPROM_READ_OPCODE_SPI    0x03  /* EEPROM read opcode */
-// #define IXGBE_EEPROM_WRITE_OPCODE_SPI   0x02  /* EEPROM write opcode */
-// #define IXGBE_EEPROM_A8_OPCODE_SPI      0x08  /* opcode bit-3 = addr bit-8 */
-// #define IXGBE_EEPROM_WREN_OPCODE_SPI    0x06  /* EEPROM set Write Ena latch */
-// /* EEPROM reset Write Enable latch */
-// #define IXGBE_EEPROM_WRDI_OPCODE_SPI    0x04
-// #define IXGBE_EEPROM_RDSR_OPCODE_SPI    0x05  /* EEPROM read Status reg */
-// #define IXGBE_EEPROM_WRSR_OPCODE_SPI    0x01  /* EEPROM write Status reg */
-// #define IXGBE_EEPROM_ERASE4K_OPCODE_SPI 0x20  /* EEPROM ERASE 4KB */
-// #define IXGBE_EEPROM_ERASE64K_OPCODE_SPI  0xD8  /* EEPROM ERASE 64KB */
-// #define IXGBE_EEPROM_ERASE256_OPCODE_SPI  0xDB  /* EEPROM ERASE 256B */
+/* Legacy EEPROM word offsets */
+#define IXGBE_ISCSI_BOOT_CAPS           0x0033
+#define IXGBE_ISCSI_SETUP_PORT_0        0x0030
+#define IXGBE_ISCSI_SETUP_PORT_1        0x0034
 
-// /* EEPROM Read Register */
-// #define IXGBE_EEPROM_RW_REG_DATA   16 /* data offset in EEPROM read reg */
-// #define IXGBE_EEPROM_RW_REG_DONE   2  /* Offset to READ done bit */
-// #define IXGBE_EEPROM_RW_REG_START  1  /* First bit to start operation */
-// #define IXGBE_EEPROM_RW_ADDR_SHIFT 2  /* Shift to the address bits */
-// #define IXGBE_NVM_POLL_WRITE       1  /* Flag for polling for write complete */
-// #define IXGBE_NVM_POLL_READ        0  /* Flag for polling for read complete */
+/* EEPROM Commands - SPI */
+#define IXGBE_EEPROM_MAX_RETRY_SPI      5000 /* Max wait 5ms for RDY signal */
+#define IXGBE_EEPROM_STATUS_RDY_SPI     0x01
+#define IXGBE_EEPROM_READ_OPCODE_SPI    0x03  /* EEPROM read opcode */
+#define IXGBE_EEPROM_WRITE_OPCODE_SPI   0x02  /* EEPROM write opcode */
+#define IXGBE_EEPROM_A8_OPCODE_SPI      0x08  /* opcode bit-3 = addr bit-8 */
+#define IXGBE_EEPROM_WREN_OPCODE_SPI    0x06  /* EEPROM set Write Ena latch */
+/* EEPROM reset Write Enable latch */
+#define IXGBE_EEPROM_WRDI_OPCODE_SPI    0x04
+#define IXGBE_EEPROM_RDSR_OPCODE_SPI    0x05  /* EEPROM read Status reg */
+#define IXGBE_EEPROM_WRSR_OPCODE_SPI    0x01  /* EEPROM write Status reg */
+#define IXGBE_EEPROM_ERASE4K_OPCODE_SPI 0x20  /* EEPROM ERASE 4KB */
+#define IXGBE_EEPROM_ERASE64K_OPCODE_SPI  0xD8  /* EEPROM ERASE 64KB */
+#define IXGBE_EEPROM_ERASE256_OPCODE_SPI  0xDB  /* EEPROM ERASE 256B */
 
-// #define NVM_INIT_CTRL_3			0x38
-// #define NVM_INIT_CTRL_3_LPLU		0x8
-// #define NVM_INIT_CTRL_3_D10GMP_PORT0	0x40
-// #define NVM_INIT_CTRL_3_D10GMP_PORT1	0x100
+/* EEPROM Read Register */
+#define IXGBE_EEPROM_RW_REG_DATA   16 /* data offset in EEPROM read reg */
+#define IXGBE_EEPROM_RW_REG_DONE   2  /* Offset to READ done bit */
+#define IXGBE_EEPROM_RW_REG_START  1  /* First bit to start operation */
+#define IXGBE_EEPROM_RW_ADDR_SHIFT 2  /* Shift to the address bits */
+#define IXGBE_NVM_POLL_WRITE       1  /* Flag for polling for write complete */
+#define IXGBE_NVM_POLL_READ        0  /* Flag for polling for read complete */
 
-// #define IXGBE_EEPROM_PAGE_SIZE_MAX       128
-// #define IXGBE_EEPROM_RD_BUFFER_MAX_COUNT 512 /* EEPROM words # read in burst */
-// #define IXGBE_EEPROM_WR_BUFFER_MAX_COUNT 256 /* EEPROM words # wr in burst */
+#define NVM_INIT_CTRL_3			0x38
+#define NVM_INIT_CTRL_3_LPLU		0x8
+#define NVM_INIT_CTRL_3_D10GMP_PORT0	0x40
+#define NVM_INIT_CTRL_3_D10GMP_PORT1	0x100
 
-// #define IXGBE_EEPROM_CTRL_2	1 /* EEPROM CTRL word 2 */
-// #define IXGBE_EEPROM_CCD_BIT	2 /* EEPROM Core Clock Disable bit */
+#define IXGBE_EEPROM_PAGE_SIZE_MAX       128
+#define IXGBE_EEPROM_RD_BUFFER_MAX_COUNT 512 /* EEPROM words # read in burst */
+#define IXGBE_EEPROM_WR_BUFFER_MAX_COUNT 256 /* EEPROM words # wr in burst */
 
-// #ifndef IXGBE_EEPROM_GRANT_ATTEMPTS
-// #define IXGBE_EEPROM_GRANT_ATTEMPTS 1000 /* EEPROM # attempts to gain grant */
-// #endif
+#define IXGBE_EEPROM_CTRL_2	1 /* EEPROM CTRL word 2 */
+#define IXGBE_EEPROM_CCD_BIT	2 /* EEPROM Core Clock Disable bit */
 
-// #ifndef IXGBE_EERD_EEWR_ATTEMPTS
-// /* Number of 5 microseconds we wait for EERD read and
-//  * EERW write to complete */
-// #define IXGBE_EERD_EEWR_ATTEMPTS 100000
-// #endif
+#ifndef IXGBE_EEPROM_GRANT_ATTEMPTS
+#define IXGBE_EEPROM_GRANT_ATTEMPTS 1000 /* EEPROM # attempts to gain grant */
+#endif
 
-// #ifndef IXGBE_FLUDONE_ATTEMPTS
-// /* # attempts we wait for flush update to complete */
-// #define IXGBE_FLUDONE_ATTEMPTS 20000
-// #endif
+#ifndef IXGBE_EERD_EEWR_ATTEMPTS
+/* Number of 5 microseconds we wait for EERD read and
+ * EERW write to complete */
+#define IXGBE_EERD_EEWR_ATTEMPTS 100000
+#endif
 
-// #define IXGBE_PCIE_CTRL2                 0x5   /* PCIe Control 2 Offset */
-// #define IXGBE_PCIE_CTRL2_DUMMY_ENABLE    0x8   /* Dummy Function Enable */
-// #define IXGBE_PCIE_CTRL2_LAN_DISABLE     0x2   /* LAN PCI Disable */
-// #define IXGBE_PCIE_CTRL2_DISABLE_SELECT  0x1   /* LAN Disable Select */
+#ifndef IXGBE_FLUDONE_ATTEMPTS
+/* # attempts we wait for flush update to complete */
+#define IXGBE_FLUDONE_ATTEMPTS 20000
+#endif
 
-// #define IXGBE_SAN_MAC_ADDR_PORT0_OFFSET  0x0
-// #define IXGBE_SAN_MAC_ADDR_PORT1_OFFSET  0x3
-// #define IXGBE_DEVICE_CAPS_ALLOW_ANY_SFP  0x1
-// #define IXGBE_DEVICE_CAPS_FCOE_OFFLOADS  0x2
-// #define IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR	BIT(7)
-// #define IXGBE_FW_LESM_PARAMETERS_PTR     0x2
-// #define IXGBE_FW_LESM_STATE_1            0x1
-// #define IXGBE_FW_LESM_STATE_ENABLED      0x8000 /* LESM Enable bit */
-// #define IXGBE_FW_PASSTHROUGH_PATCH_CONFIG_PTR   0x4
-// #define IXGBE_FW_PATCH_VERSION_4         0x7
-// #define IXGBE_FCOE_IBA_CAPS_BLK_PTR         0x33 /* iSCSI/FCOE block */
-// #define IXGBE_FCOE_IBA_CAPS_FCOE            0x20 /* FCOE flags */
-// #define IXGBE_ISCSI_FCOE_BLK_PTR            0x17 /* iSCSI/FCOE block */
-// #define IXGBE_ISCSI_FCOE_FLAGS_OFFSET       0x0  /* FCOE flags */
-// #define IXGBE_ISCSI_FCOE_FLAGS_ENABLE       0x1  /* FCOE flags enable bit */
-// #define IXGBE_ALT_SAN_MAC_ADDR_BLK_PTR      0x27 /* Alt. SAN MAC block */
-// #define IXGBE_ALT_SAN_MAC_ADDR_CAPS_OFFSET  0x0 /* Alt. SAN MAC capability */
-// #define IXGBE_ALT_SAN_MAC_ADDR_PORT0_OFFSET 0x1 /* Alt. SAN MAC 0 offset */
-// #define IXGBE_ALT_SAN_MAC_ADDR_PORT1_OFFSET 0x4 /* Alt. SAN MAC 1 offset */
-// #define IXGBE_ALT_SAN_MAC_ADDR_WWNN_OFFSET  0x7 /* Alt. WWNN prefix offset */
-// #define IXGBE_ALT_SAN_MAC_ADDR_WWPN_OFFSET  0x8 /* Alt. WWPN prefix offset */
-// #define IXGBE_ALT_SAN_MAC_ADDR_CAPS_SANMAC  0x0 /* Alt. SAN MAC exists */
-// #define IXGBE_ALT_SAN_MAC_ADDR_CAPS_ALTWWN  0x1 /* Alt. WWN base exists */
+#define IXGBE_PCIE_CTRL2                 0x5   /* PCIe Control 2 Offset */
+#define IXGBE_PCIE_CTRL2_DUMMY_ENABLE    0x8   /* Dummy Function Enable */
+#define IXGBE_PCIE_CTRL2_LAN_DISABLE     0x2   /* LAN PCI Disable */
+#define IXGBE_PCIE_CTRL2_DISABLE_SELECT  0x1   /* LAN Disable Select */
 
-// #define IXGBE_DEVICE_CAPS_WOL_PORT0_1  0x4 /* WoL supported on ports 0 & 1 */
-// #define IXGBE_DEVICE_CAPS_WOL_PORT0    0x8 /* WoL supported on port 0 */
-// #define IXGBE_DEVICE_CAPS_WOL_MASK     0xC /* Mask for WoL capabilities */
+#define IXGBE_SAN_MAC_ADDR_PORT0_OFFSET  0x0
+#define IXGBE_SAN_MAC_ADDR_PORT1_OFFSET  0x3
+#define IXGBE_DEVICE_CAPS_ALLOW_ANY_SFP  0x1
+#define IXGBE_DEVICE_CAPS_FCOE_OFFLOADS  0x2
+#define IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR	BIT(7)
+#define IXGBE_FW_LESM_PARAMETERS_PTR     0x2
+#define IXGBE_FW_LESM_STATE_1            0x1
+#define IXGBE_FW_LESM_STATE_ENABLED      0x8000 /* LESM Enable bit */
+#define IXGBE_FW_PASSTHROUGH_PATCH_CONFIG_PTR   0x4
+#define IXGBE_FW_PATCH_VERSION_4         0x7
+#define IXGBE_FCOE_IBA_CAPS_BLK_PTR         0x33 /* iSCSI/FCOE block */
+#define IXGBE_FCOE_IBA_CAPS_FCOE            0x20 /* FCOE flags */
+#define IXGBE_ISCSI_FCOE_BLK_PTR            0x17 /* iSCSI/FCOE block */
+#define IXGBE_ISCSI_FCOE_FLAGS_OFFSET       0x0  /* FCOE flags */
+#define IXGBE_ISCSI_FCOE_FLAGS_ENABLE       0x1  /* FCOE flags enable bit */
+#define IXGBE_ALT_SAN_MAC_ADDR_BLK_PTR      0x27 /* Alt. SAN MAC block */
+#define IXGBE_ALT_SAN_MAC_ADDR_CAPS_OFFSET  0x0 /* Alt. SAN MAC capability */
+#define IXGBE_ALT_SAN_MAC_ADDR_PORT0_OFFSET 0x1 /* Alt. SAN MAC 0 offset */
+#define IXGBE_ALT_SAN_MAC_ADDR_PORT1_OFFSET 0x4 /* Alt. SAN MAC 1 offset */
+#define IXGBE_ALT_SAN_MAC_ADDR_WWNN_OFFSET  0x7 /* Alt. WWNN prefix offset */
+#define IXGBE_ALT_SAN_MAC_ADDR_WWPN_OFFSET  0x8 /* Alt. WWPN prefix offset */
+#define IXGBE_ALT_SAN_MAC_ADDR_CAPS_SANMAC  0x0 /* Alt. SAN MAC exists */
+#define IXGBE_ALT_SAN_MAC_ADDR_CAPS_ALTWWN  0x1 /* Alt. WWN base exists */
+
+#define IXGBE_DEVICE_CAPS_WOL_PORT0_1  0x4 /* WoL supported on ports 0 & 1 */
+#define IXGBE_DEVICE_CAPS_WOL_PORT0    0x8 /* WoL supported on port 0 */
+#define IXGBE_DEVICE_CAPS_WOL_MASK     0xC /* Mask for WoL capabilities */
 
 /* PCI Bus Info */
 #define IXGBE_PCI_DEVICE_STATUS   0xAA
@@ -2191,36 +2193,36 @@ enum {
 #define IXGBE_RAH_AV            0x80000000
 #define IXGBE_CLEAR_VMDQ_ALL    0xFFFFFFFF
 
-// /* Header split receive */
-// #define IXGBE_RFCTL_ISCSI_DIS       0x00000001
-// #define IXGBE_RFCTL_ISCSI_DWC_MASK  0x0000003E
-// #define IXGBE_RFCTL_ISCSI_DWC_SHIFT 1
-// #define IXGBE_RFCTL_RSC_DIS		0x00000020
-// #define IXGBE_RFCTL_NFSW_DIS        0x00000040
-// #define IXGBE_RFCTL_NFSR_DIS        0x00000080
-// #define IXGBE_RFCTL_NFS_VER_MASK    0x00000300
-// #define IXGBE_RFCTL_NFS_VER_SHIFT   8
-// #define IXGBE_RFCTL_NFS_VER_2       0
-// #define IXGBE_RFCTL_NFS_VER_3       1
-// #define IXGBE_RFCTL_NFS_VER_4       2
-// #define IXGBE_RFCTL_IPV6_DIS        0x00000400
-// #define IXGBE_RFCTL_IPV6_XSUM_DIS   0x00000800
-// #define IXGBE_RFCTL_IPFRSP_DIS      0x00004000
-// #define IXGBE_RFCTL_IPV6_EX_DIS     0x00010000
-// #define IXGBE_RFCTL_NEW_IPV6_EXT_DIS 0x00020000
+/* Header split receive */
+#define IXGBE_RFCTL_ISCSI_DIS       0x00000001
+#define IXGBE_RFCTL_ISCSI_DWC_MASK  0x0000003E
+#define IXGBE_RFCTL_ISCSI_DWC_SHIFT 1
+#define IXGBE_RFCTL_RSC_DIS		0x00000020
+#define IXGBE_RFCTL_NFSW_DIS        0x00000040
+#define IXGBE_RFCTL_NFSR_DIS        0x00000080
+#define IXGBE_RFCTL_NFS_VER_MASK    0x00000300
+#define IXGBE_RFCTL_NFS_VER_SHIFT   8
+#define IXGBE_RFCTL_NFS_VER_2       0
+#define IXGBE_RFCTL_NFS_VER_3       1
+#define IXGBE_RFCTL_NFS_VER_4       2
+#define IXGBE_RFCTL_IPV6_DIS        0x00000400
+#define IXGBE_RFCTL_IPV6_XSUM_DIS   0x00000800
+#define IXGBE_RFCTL_IPFRSP_DIS      0x00004000
+#define IXGBE_RFCTL_IPV6_EX_DIS     0x00010000
+#define IXGBE_RFCTL_NEW_IPV6_EXT_DIS 0x00020000
 
-// /* Transmit Config masks */
-// #define IXGBE_TXDCTL_ENABLE     0x02000000 /* Enable specific Tx Queue */
-// #define IXGBE_TXDCTL_SWFLSH     0x04000000 /* Tx Desc. write-back flushing */
-// #define IXGBE_TXDCTL_WTHRESH_SHIFT      16 /* shift to WTHRESH bits */
-// /* Enable short packet padding to 64 bytes */
-// #define IXGBE_TX_PAD_ENABLE     0x00000400
-// #define IXGBE_JUMBO_FRAME_ENABLE 0x00000004  /* Allow jumbo frames */
-// /* This allows for 16K packets + 4k for vlan */
-// #define IXGBE_MAX_FRAME_SZ      0x40040000
+/* Transmit Config masks */
+#define IXGBE_TXDCTL_ENABLE     0x02000000 /* Enable specific Tx Queue */
+#define IXGBE_TXDCTL_SWFLSH     0x04000000 /* Tx Desc. write-back flushing */
+#define IXGBE_TXDCTL_WTHRESH_SHIFT      16 /* shift to WTHRESH bits */
+/* Enable short packet padding to 64 bytes */
+#define IXGBE_TX_PAD_ENABLE     0x00000400
+#define IXGBE_JUMBO_FRAME_ENABLE 0x00000004  /* Allow jumbo frames */
+/* This allows for 16K packets + 4k for vlan */
+#define IXGBE_MAX_FRAME_SZ      0x40040000
 
-// #define IXGBE_TDWBAL_HEAD_WB_ENABLE   0x1      /* Tx head write-back enable */
-// #define IXGBE_TDWBAL_SEQNUM_WB_ENABLE 0x2      /* Tx seq# write-back enable */
+#define IXGBE_TDWBAL_HEAD_WB_ENABLE   0x1      /* Tx head write-back enable */
+#define IXGBE_TDWBAL_SEQNUM_WB_ENABLE 0x2      /* Tx seq# write-back enable */
 
 /* Receive Config masks */
 #define IXGBE_RXCTRL_RXEN       0x00000001  /* Enable Receiver */
@@ -3421,7 +3423,7 @@ struct ixgbe_eeprom_operations {
 	void (*enable_tx_laser)(struct ixgbe_hw *);
 	void (*flap_tx_laser)(struct ixgbe_hw *);
 	void (*stop_link_on_d3)(struct ixgbe_hw *);
-	s32 (*setup_link)(struct ixgbe_hw *, ixgbe_link_speed, bool);
+	s32 (*setup_link)(struct ixgbe_hw *, ixgbe_link_speed, bool, bool);
 	s32 (*setup_mac_link)(struct ixgbe_hw *, ixgbe_link_speed, bool);
 	s32 (*check_link)(struct ixgbe_hw *, ixgbe_link_speed *, bool *, bool);
 	s32 (*get_link_capabilities)(struct ixgbe_hw *, ixgbe_link_speed *,
@@ -3440,11 +3442,14 @@ struct ixgbe_eeprom_operations {
 
 	/* RAR, Multicast, VLAN */
 	s32 (*set_rar)(struct ixgbe_hw *, u32, u8 *, u32, u32);
+	s32 (*set_uc_addr)(struct ixgbe_hw *, u32, u8 *);
 	s32 (*clear_rar)(struct ixgbe_hw *, u32);
 	s32 (*set_vmdq)(struct ixgbe_hw *, u32, u32);
 	s32 (*set_vmdq_san_mac)(struct ixgbe_hw *, u32);
 	s32 (*clear_vmdq)(struct ixgbe_hw *, u32, u32);
 	s32 (*init_rx_addrs)(struct ixgbe_hw *);
+		s32 (*update_uc_addr_list)(struct ixgbe_hw *, u8 *, u32,
+				   ixgbe_mc_addr_itr);
 	s32 (*update_mc_addr_list)(struct ixgbe_hw *, u8 *mc_addr_list,
 			      u32 mc_addr_count, ixgbe_mc_addr_itr func,
 			      bool clear);
@@ -3588,36 +3593,36 @@ struct ixgbe_phy_info {
 	u32				nw_mng_if_sel;
 };
 
-// #include "ixgbe_mbx.h"
+#include "ixgbe_mbx.h"
 
-// struct ixgbe_mbx_operations {
-// 	s32 (*init_params)(struct ixgbe_hw *hw);
-// 	s32 (*read)(struct ixgbe_hw *, u32 *, u16,  u16);
-// 	s32 (*write)(struct ixgbe_hw *, u32 *, u16, u16);
-// 	s32 (*read_posted)(struct ixgbe_hw *, u32 *, u16,  u16);
-// 	s32 (*write_posted)(struct ixgbe_hw *, u32 *, u16, u16);
-// 	s32 (*check_for_msg)(struct ixgbe_hw *, u16);
-// 	s32 (*check_for_ack)(struct ixgbe_hw *, u16);
-// 	s32 (*check_for_rst)(struct ixgbe_hw *, u16);
-// };
+struct ixgbe_mbx_operations {
+	s32 (*init_params)(struct ixgbe_hw *hw);
+	s32 (*read)(struct ixgbe_hw *, u32 *, u16,  u16);
+	s32 (*write)(struct ixgbe_hw *, u32 *, u16, u16);
+	s32 (*read_posted)(struct ixgbe_hw *, u32 *, u16,  u16);
+	s32 (*write_posted)(struct ixgbe_hw *, u32 *, u16, u16);
+	s32 (*check_for_msg)(struct ixgbe_hw *, u16);
+	s32 (*check_for_ack)(struct ixgbe_hw *, u16);
+	s32 (*check_for_rst)(struct ixgbe_hw *, u16);
+};
 
-// struct ixgbe_mbx_stats {
-// 	u32 msgs_tx;
-// 	u32 msgs_rx;
+struct ixgbe_mbx_stats {
+	u32 msgs_tx;
+	u32 msgs_rx;
 
-// 	u32 acks;
-// 	u32 reqs;
-// 	u32 rsts;
-// };
+	u32 acks;
+	u32 reqs;
+	u32 rsts;
+};
 
-// struct ixgbe_mbx_info {
-// 	const struct ixgbe_mbx_operations *ops;
-// 	struct ixgbe_mbx_stats stats;
-// 	u32 timeout;
-// 	u32 usec_delay;
-// 	u32 v2p_mailbox;
-// 	u16 size;
-// };
+struct ixgbe_mbx_info {
+	struct ixgbe_mbx_operations ops;
+	struct ixgbe_mbx_stats stats;
+	u32 timeout;
+	u32 usec_delay;
+	u32 v2p_mailbox;
+	u16 size;
+};
 
 struct ixgbe_hw {
 	u8 __iomem			*hw_addr;
@@ -3629,7 +3634,7 @@ struct ixgbe_hw {
 	struct ixgbe_link_info		link;
 	struct ixgbe_eeprom_info	eeprom;
 	struct ixgbe_bus_info		bus;
-	// struct ixgbe_mbx_info		mbx;
+	struct ixgbe_mbx_info		mbx;
 	const u32			*mvals;
 	u16				device_id;
 	u16				vendor_id;
@@ -3637,6 +3642,7 @@ struct ixgbe_hw {
 	u16				subsystem_vendor_id;
 	u8				revision_id;
 	bool			adapter_stopped;
+	int 			api_version;
 	bool			force_full_reset;
 	bool			allow_unsupported_sfp;
 	bool			wol_enabled;
@@ -3646,13 +3652,13 @@ struct ixgbe_hw {
 
 struct ixgbe_info {
  	enum ixgbe_mac_type		mac;
-// 	s32 				(*get_invariants)(struct ixgbe_hw *);
-// 	const struct ixgbe_mac_operations	*mac_ops;
-// 	const struct ixgbe_eeprom_operations	*eeprom_ops;
-// 	const struct ixgbe_phy_operations	*phy_ops;
-// 	const struct ixgbe_mbx_operations	*mbx_ops;
-// 	const struct ixgbe_link_operations	*link_ops;
-// 	const u32			*mvals;
+	s32 				(*get_invariants)(struct ixgbe_hw *);
+	const struct ixgbe_mac_operations	*mac_ops;
+	const struct ixgbe_eeprom_operations	*eeprom_ops;
+	const struct ixgbe_phy_operations	*phy_ops;
+	const struct ixgbe_mbx_operations	*mbx_ops;
+	const struct ixgbe_link_operations	*link_ops;
+	const u32			*mvals;
 };
 
 #define ixgbe_call_func(hw, func, params, error) \
@@ -3693,9 +3699,10 @@ struct ixgbe_info {
 #define IXGBE_ERR_PBA_SECTION                   -31
 #define IXGBE_ERR_INVALID_ARGUMENT              -32
 #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
-#define IXGBE_ERR_FDIR_CMD_INCOMPLETE		-38
-#define IXGBE_ERR_FW_RESP_INVALID		-39
-#define IXGBE_ERR_TOKEN_RETRY			-40
+#define IXGBE_ERR_OUT_OF_MEM					-34		
+#define IXGBE_ERR_FDIR_CMD_INCOMPLETE			-38
+#define IXGBE_ERR_FW_RESP_INVALID				-39
+#define IXGBE_ERR_TOKEN_RETRY					-40
 #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
 
 // #define IXGBE_FUSES0_GROUP(_i)		(0x11158 + ((_i) * 4))

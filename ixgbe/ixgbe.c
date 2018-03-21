@@ -13,6 +13,7 @@
 #include "ixgbe_common.h"
 #include "ixgbe_type.h"
 #include "ixgbe_ethdev.h"
+#include "ixgbe_vf.h"
 
 char ixgbe_driver_name[] = "ixgbe";
 static const char ixgbe_driver_string[] =
@@ -821,7 +822,7 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
 		goto error;
 	}
 
-	err = ixgbe_setup_link(hw, speed, negotiate);
+	err = ixgbe_setup_link(hw, speed, negotiate, 0);
 	if (err)
 		goto error;
 

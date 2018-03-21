@@ -580,10 +580,10 @@ void ixgbe_flap_tx_laser(struct ixgbe_hw *hw)
  *  Performs autonegotiation if needed.
  **/
 s32 ixgbe_setup_link(struct ixgbe_hw *hw, ixgbe_link_speed speed,
-		     bool autoneg)
+		     bool autoneg, bool autoneg_wait_to_complete)
 {
 	return ixgbe_call_func(hw, hw->mac.ops.setup_link, (hw, speed,
-			       autoneg),
+			       autoneg, autoneg_wait_to_complete),
 			       IXGBE_NOT_IMPLEMENTED);
 }
 
@@ -870,13 +870,13 @@ u32 ixgbe_get_num_rx_addrs(struct ixgbe_hw *hw)
  *  receive address registers. Uses unused receive address registers for the
  *  first secondary addresses, and falls back to promiscuous mode as needed.
  **/
-// s32 ixgbe_update_uc_addr_list(struct ixgbe_hw *hw, u8 *addr_list,
-// 			      u32 addr_count, ixgbe_mc_addr_itr func)
-// {
-// 	return ixgbe_call_func(hw, hw->mac.ops.update_uc_addr_list, (hw,
-// 			       addr_list, addr_count, func),
-// 			       IXGBE_NOT_IMPLEMENTED);
-// }
+s32 ixgbe_update_uc_addr_list(struct ixgbe_hw *hw, u8 *addr_list,
+			      u32 addr_count, ixgbe_mc_addr_itr func)
+{
+	return ixgbe_call_func(hw, hw->mac.ops.update_uc_addr_list, (hw,
+			       addr_list, addr_count, func),
+			       IXGBE_NOT_IMPLEMENTED);
+}
 
 /**
  *  ixgbe_update_mc_addr_list - Updates the MAC's list of multicast addresses
