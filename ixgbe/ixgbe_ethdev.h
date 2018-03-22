@@ -36,7 +36,7 @@
 #include <net/ethernet.h>
 #include <mbuf.h>
 #include "ixgbe_dcb.h"
-//#include "ixgbe_dcb_82599.h"
+#include "ixgbe_dcb_82599.h"
 //#include "ixgbe_dcb_82598.h"
 
 /* need update link, bit flag */

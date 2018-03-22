@@ -948,7 +948,7 @@ struct rte_eth_dev_data {
 	// /** bitmap array of associating Ethernet MAC addresses to pools */
 	// struct eth_addr* hash_mac_addrs;
 
-	// uint32_t max_frame_size;
+	uint32_t max_frame_size;
 	// /** Device Ethernet MAC addresses of hash filtering. */
 	uint8_t port_id;           /**< Device [external] port identifier. */
 	uint8_t promiscuous   : 1, /**< RX promiscuous mode ON(1) / OFF(0). */

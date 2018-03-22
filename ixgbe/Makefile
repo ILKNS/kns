@@ -4,4 +4,7 @@ obj-y += ixgbe_common.o
 obj-y += ixgbe_vf.o
 obj-y += ixgbe_mbx.o
 obj-y += ixgbe_82599.o
+obj-y += ixgbe_dcb.o
+obj-y += ixgbe_dcb_82599.o
 obj-y += ixgbe_phy.o
+obj-y += ixgbe_rxtx.c
