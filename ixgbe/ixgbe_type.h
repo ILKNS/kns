@@ -887,13 +887,19 @@ struct ixgbe_thermal_sensor_data {
 #define IXGBE_MDIO_AUTO_NEG_ADVT	0x10 /* AUTO_NEG Advt Reg */
 #define IXGBE_MDIO_AUTO_NEG_LP		0x13 /* AUTO_NEG LP Status Reg */
 
+#define IXGBE_MII_10GBASE_T_AUTONEG_CTRL_REG	0x20   /* 10G Control Reg */
 #define IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG 0xC400	/* 1G Provisioning 1 */
 #define IXGBE_MII_AUTONEG_XNP_TX_REG		0x17	/* 1G XNP Transmit */
+#define IXGBE_MII_AUTONEG_ADVERTISE_REG		0x10   /* 100M Advertisement */
+#define IXGBE_MII_10GBASE_T_ADVERTISE		0x1000 /* full duplex, bit:12*/
 #define IXGBE_MII_1GBASE_T_ADVERTISE_XNP_TX	0x4000	/* full duplex, bit:14*/
 #define IXGBE_MII_1GBASE_T_ADVERTISE		0x8000	/* full duplex, bit:15*/
 #define IXGBE_MII_2_5GBASE_T_ADVERTISE		0x0400
 #define IXGBE_MII_5GBASE_T_ADVERTISE		0x0800
+#define IXGBE_MII_100BASE_T_ADVERTISE		0x0100 /* full duplex, bit:8 */
+#define IXGBE_MII_100BASE_T_ADVERTISE_HALF	0x0080 /* half duplex, bit:7 */
 #define IXGBE_MII_RESTART			0x200
+#define IXGBE_MII_AUTONEG_COMPLETE		0x20
 #define IXGBE_MII_AUTONEG_LINK_UP		0x04
 #define IXGBE_MII_AUTONEG_REG			0x0
 
@@ -1335,6 +1341,8 @@ struct ixgbe_thermal_sensor_data {
 
 #define IXGBE_MDIO_COMMAND_TIMEOUT     100 /* PHY Timeout for 1 GB mode */
 
+#define IXGBE_MDIO_VENDOR_SPECIFIC_1_CONTROL		0x0 /* VS1 Ctrl Reg */
+#define IXGBE_MDIO_VENDOR_SPECIFIC_1_STATUS		0x1 /* VS1 Status Reg */
 #define IXGBE_MDIO_VENDOR_SPECIFIC_1_LINK_STATUS  0x0008 /* 1 = Link Up */
 #define IXGBE_MDIO_VENDOR_SPECIFIC_1_SPEED_STATUS 0x0010 /* 0 - 10G, 1 - 1G */
 #define IXGBE_MDIO_VENDOR_SPECIFIC_1_10G_SPEED    0x0018
@@ -3153,10 +3161,10 @@ union ixgbe_atr_hash_dword {
 	IXGBE_CAT(I2C_CLK_OE_N_EN, m),	\
 	IXGBE_CAT(I2CCTL, m)
 
-// enum ixgbe_mvals {
-// 	IXGBE_MVALS_INIT(IDX),
-// 	IXGBE_MVALS_IDX_LIMIT
-// };
+enum ixgbe_mvals {
+	IXGBE_MVALS_INIT(IDX),
+	IXGBE_MVALS_IDX_LIMIT
+};
 
 /*
  * Unavailable: The FCoE Boot Option ROM is not present in the flash.
@@ -3567,6 +3575,7 @@ struct ixgbe_phy_operations {
 	s32 (*read_i2c_sff8472)(struct ixgbe_hw *, u8 , u8 *);
 	s32 (*read_i2c_eeprom)(struct ixgbe_hw *, u8 , u8 *);
 	s32 (*write_i2c_eeprom)(struct ixgbe_hw *, u8, u8);
+	void (*i2c_bus_clear)(struct ixgbe_hw *);
 	s32 (*check_overtemp)(struct ixgbe_hw *);
 	s32 (*set_phy_power)(struct ixgbe_hw *, bool on);
 	s32 (*enter_lplu)(struct ixgbe_hw *);
@@ -3637,8 +3646,9 @@ struct ixgbe_mac_info {
 
 struct ixgbe_phy_info {
  	struct ixgbe_phy_operations     ops;
-	struct mdio_if_info		mdio;
+	struct mdio_if_info				mdio;
 	enum ixgbe_phy_type             type;
+	u32								addr;
 	u32                             id;
 	enum ixgbe_sfp_type             sfp_type;
 	bool                            sfp_setup_needed;
