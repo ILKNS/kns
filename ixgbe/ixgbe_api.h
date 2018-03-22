@@ -116,9 +116,9 @@ s32 ixgbe_enable_mc(struct ixgbe_hw *hw);
 s32 ixgbe_disable_mc(struct ixgbe_hw *hw);
 s32 ixgbe_clear_vfta(struct ixgbe_hw *hw);
 s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan,
-		   u32 vind, int vlan_on);
+		   u32 vind, bool vlan_on);
 s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
-		   int vlan_on, int *vfta_changed);
+		   bool vlan_on, bool *vfta_changed);
 s32 ixgbe_fc_enable(struct ixgbe_hw *hw);
 s32 ixgbe_set_fw_drv_ver(struct ixgbe_hw *hw, u8 maj, u8 min, u8 build,
 			 u8 ver, u16 len, const char* str);
@@ -157,7 +157,7 @@ void ixgbe_atr_compute_perfect_hash_82599(union ixgbe_atr_input *input,
 					  union ixgbe_atr_input *mask);
 u32 ixgbe_atr_compute_sig_hash_82599(union ixgbe_atr_hash_dword input,
 				     union ixgbe_atr_hash_dword common);
-int ixgbe_verify_lesm_fw_enabled_82599(struct ixgbe_hw *hw);
+bool ixgbe_verify_lesm_fw_enabled_82599(struct ixgbe_hw *hw);
 s32 ixgbe_read_i2c_byte(struct ixgbe_hw *hw, u8 byte_offset, u8 dev_addr,
 			u8 *data);
 s32 ixgbe_write_i2c_byte(struct ixgbe_hw *hw, u8 byte_offset, u8 dev_addr,

@@ -59,19 +59,19 @@ s32 ixgbe_init_shared_code(struct ixgbe_hw *hw)
 	ixgbe_set_mac_type(hw);
 
 	switch (hw->mac.type) {
-	case ixgbe_mac_82598EB:
-		status = ixgbe_init_ops_82598(hw);
-		break;
+	// case ixgbe_mac_82598EB:
+	// 	status = ixgbe_init_ops_82598(hw);
+	// 	break;
 	case ixgbe_mac_82599EB:
 		status = ixgbe_init_ops_82599(hw);
 		break;
 	case ixgbe_mac_82599_vf:
-	case ixgbe_mac_X540_vf:
+	// case ixgbe_mac_X540_vf:
 		status = ixgbe_init_ops_vf(hw);
 		break;
-	case ixgbe_mac_X540:
-		status = ixgbe_init_ops_X540(hw);
-		break;
+	// case ixgbe_mac_X540:
+	// 	status = ixgbe_init_ops_X540(hw);
+	// 	break;
 	default:
 		status = IXGBE_ERR_DEVICE_NOT_SUPPORTED;
 		break;
@@ -256,18 +256,18 @@ s32 ixgbe_get_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
 			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
 }
 
-// /**
-//  *  ixgbe_set_san_mac_addr - Write a SAN MAC address
-//  *  @hw: pointer to hardware structure
-//  *  @san_mac_addr: SAN MAC address
-//  *
-//  *  Writes A SAN MAC address to the EEPROM.
-//  **/
-// s32 ixgbe_set_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
-// {
-// 	return ixgbe_call_func(hw, hw->mac.ops.set_san_mac_addr,
-// 			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
-// }
+/**
+ *  ixgbe_set_san_mac_addr - Write a SAN MAC address
+ *  @hw: pointer to hardware structure
+ *  @san_mac_addr: SAN MAC address
+ *
+ *  Writes A SAN MAC address to the EEPROM.
+ **/
+s32 ixgbe_set_san_mac_addr(struct ixgbe_hw *hw, u8 *san_mac_addr)
+{
+	return ixgbe_call_func(hw, hw->mac.ops.set_san_mac_addr,
+			       (hw, san_mac_addr), IXGBE_NOT_IMPLEMENTED);
+}
 
 /**
  *  ixgbe_get_device_caps - Get additional device capabilities
@@ -306,12 +306,12 @@ s32 ixgbe_get_wwn_prefix(struct ixgbe_hw *hw, u16 *wwnn_prefix,
  *
  *  This function will read the FCOE boot status from the iSCSI FCOE block
  **/
-// s32 ixgbe_get_fcoe_boot_status(struct ixgbe_hw *hw, u16 *bs)
-// {
-// 	return ixgbe_call_func(hw, hw->mac.ops.get_fcoe_boot_status,
-// 			       (hw, bs),
-// 			       IXGBE_NOT_IMPLEMENTED);
-// }
+s32 ixgbe_get_fcoe_boot_status(struct ixgbe_hw *hw, u16 *bs)
+{
+	return ixgbe_call_func(hw, hw->mac.ops.get_fcoe_boot_status,
+			       (hw, bs),
+			       IXGBE_NOT_IMPLEMENTED);
+}
 
 /**
  *  ixgbe_get_bus_info - Set PCI bus info
@@ -944,11 +944,11 @@ s32 ixgbe_clear_vfta(struct ixgbe_hw *hw)
  *
  *  Turn on/off specified VLAN in the VLAN filter table.
  **/
-// s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on)
-// {
-// 	return ixgbe_call_func(hw, hw->mac.ops.set_vfta, (hw, vlan, vind,
-// 			       vlan_on), IXGBE_NOT_IMPLEMENTED);
-// }
+s32 ixgbe_set_vfta(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on)
+{
+	return ixgbe_call_func(hw, hw->mac.ops.set_vfta, (hw, vlan, vind,
+			       vlan_on), IXGBE_NOT_IMPLEMENTED);
+}
 
 /**
  *  ixgbe_set_vlvf - Set VLAN Pool Filter
@@ -961,12 +961,12 @@ s32 ixgbe_clear_vfta(struct ixgbe_hw *hw)
  *
  *  Turn on/off specified bit in VLVF table.
  **/
-// s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on,
-// 		    bool *vfta_changed)
-// {
-// 	return ixgbe_call_func(hw, hw->mac.ops.set_vlvf, (hw, vlan, vind,
-// 			       vlan_on, vfta_changed), IXGBE_NOT_IMPLEMENTED);
-// }
+s32 ixgbe_set_vlvf(struct ixgbe_hw *hw, u32 vlan, u32 vind, bool vlan_on,
+		    bool *vfta_changed)
+{
+	return ixgbe_call_func(hw, hw->mac.ops.set_vlvf, (hw, vlan, vind,
+			       vlan_on, vfta_changed), IXGBE_NOT_IMPLEMENTED);
+}
 
 /**
  *  ixgbe_fc_enable - Enable flow control
