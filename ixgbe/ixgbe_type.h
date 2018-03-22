@@ -34,6 +34,7 @@
 #include <linux/netdevice.h>
 #include <linux/delay.h>
 #include <asm/byteorder.h>
+#include <linux/byteorder/generic.h>
 
 /* Device IDs */
 #define IXGBE_DEV_ID_82598               0x10B6
@@ -1369,6 +1370,20 @@ struct ixgbe_thermal_sensor_data {
 #define IXGBE_MDIO_GLOBAL_STD_ALM2_INT		0x200 /* vendor alarm2 int mask */
 #define IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN	0x4000 /* int high temp enable */
 #define IXGBE_MDIO_GLOBAL_INT_DEV_FAULT_EN	0x0010 /*int dev fault enable */
+
+#define IXGBE_MDIO_PHY_XS_CONTROL	0x0 /* PHY_XS Control Reg */
+#define IXGBE_MDIO_PHY_XS_RESET		0x8000 /* PHY_XS Reset */
+#define IXGBE_MDIO_PHY_ID_HIGH		0x2 /* PHY ID High Reg*/
+#define IXGBE_MDIO_PHY_ID_LOW		0x3 /* PHY ID Low Reg*/
+#define IXGBE_MDIO_PHY_SPEED_ABILITY	0x4 /* Speed Ability Reg */
+#define IXGBE_MDIO_PHY_SPEED_10G	0x0001 /* 10G capable */
+#define IXGBE_MDIO_PHY_SPEED_1G		0x0010 /* 1G capable */
+#define IXGBE_MDIO_PHY_SPEED_100M	0x0020 /* 100M capable */
+#define IXGBE_MDIO_PHY_EXT_ABILITY	0xB /* Ext Ability Reg */
+#define IXGBE_MDIO_PHY_10GBASET_ABILITY		0x0004 /* 10GBaseT capable */
+#define IXGBE_MDIO_PHY_1000BASET_ABILITY	0x0020 /* 1000BaseT capable */
+#define IXGBE_MDIO_PHY_100BASETX_ABILITY	0x0080 /* 100BaseTX capable */
+#define IXGBE_MDIO_PHY_SET_LOW_POWER_MODE	0x0800 /* Set low power mode */
 
 #define IXGBE_MDIO_PMA_PMD_SDA_SCL_ADDR	0xC30A /* PHY_XS SDA/SCL Addr Reg */
 #define IXGBE_MDIO_PMA_PMD_SDA_SCL_DATA	0xC30B /* PHY_XS SDA/SCL Data Reg */
@@ -2964,6 +2979,25 @@ typedef u32 ixgbe_link_speed;
 					IXGBE_LINK_SPEED_1GB_FULL | \
 					IXGBE_LINK_SPEED_10GB_FULL)
 
+/* Physical layer type */
+typedef u32 ixgbe_physical_layer;
+#define IXGBE_PHYSICAL_LAYER_UNKNOWN		0
+#define IXGBE_PHYSICAL_LAYER_10GBASE_T		0x0001
+#define IXGBE_PHYSICAL_LAYER_1000BASE_T		0x0002
+#define IXGBE_PHYSICAL_LAYER_100BASE_TX		0x0004
+#define IXGBE_PHYSICAL_LAYER_SFP_PLUS_CU	0x0008
+#define IXGBE_PHYSICAL_LAYER_10GBASE_LR		0x0010
+#define IXGBE_PHYSICAL_LAYER_10GBASE_LRM	0x0020
+#define IXGBE_PHYSICAL_LAYER_10GBASE_SR		0x0040
+#define IXGBE_PHYSICAL_LAYER_10GBASE_KX4	0x0080
+#define IXGBE_PHYSICAL_LAYER_10GBASE_CX4	0x0100
+#define IXGBE_PHYSICAL_LAYER_1000BASE_KX	0x0200
+#define IXGBE_PHYSICAL_LAYER_1000BASE_BX	0x0400
+#define IXGBE_PHYSICAL_LAYER_10GBASE_KR		0x0800
+#define IXGBE_PHYSICAL_LAYER_10GBASE_XAUI	0x1000
+#define IXGBE_PHYSICAL_LAYER_SFP_ACTIVE_DA	0x2000
+#define IXGBE_PHYSICAL_LAYER_1000BASE_SX	0x4000
+
 /* Flow Control Data Sheet defined values
  * Calculation and defines taken from 802.1bb Annex O
  */
@@ -3527,6 +3561,7 @@ struct ixgbe_phy_operations {
 	s32 (*setup_internal_link)(struct ixgbe_hw *);
 	s32 (*setup_link_speed)(struct ixgbe_hw *, ixgbe_link_speed, bool, bool);
 	s32 (*check_link)(struct ixgbe_hw *, ixgbe_link_speed *, bool *);
+	s32 (*get_firmware_version)(struct ixgbe_hw *, u16 *);
 	s32 (*read_i2c_byte)(struct ixgbe_hw *, u8, u8, u8 *);
 	s32 (*write_i2c_byte)(struct ixgbe_hw *, u8, u8, u8);
 	s32 (*read_i2c_sff8472)(struct ixgbe_hw *, u8 , u8 *);
