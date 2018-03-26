@@ -1033,6 +1033,7 @@ struct ixgbe_thermal_sensor_data {
 #define IXGBE_GCR_EXT_VT_MODE_64        0x00000003
 #define IXGBE_GCR_EXT_SRIOV             (IXGBE_GCR_EXT_MSIX_EN | \
 					 IXGBE_GCR_EXT_VT_MODE_64)
+#define IXGBE_GCR_EXT_VT_MODE_MASK		0x00000003
 
 /* Time Sync Registers */
 #define IXGBE_TSYNCRXCTL 0x05188 /* Rx Time Sync Control register - RW */

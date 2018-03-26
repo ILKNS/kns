@@ -181,10 +181,10 @@ extern void mbuf_default_done(struct mbuf *m);
  * mbuf_xmit_done - called when a TX queue completes an mbuf
  * @m: the mbuf
  */
-// static inline void mbuf_xmit_done(struct mbuf *m)
-// {
-// 	m->done(m);
-// }
+static inline void mbuf_xmit_done(struct mbuf *m)
+{
+	m->done(m);
+}
 
 // DECLARE_PERCPU(struct mempool, mbuf_mempool);
 

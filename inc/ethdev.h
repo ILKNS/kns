@@ -4,6 +4,8 @@
 #include <linux/pci.h>
 #include <net/ethernet.h>
 
+#include <ethqueue.h>
+
 /* FIXME: figure out the right size for this */
 #define RTE_ETHDEV_QUEUE_STAT_CNTRS	16
 
@@ -924,8 +926,8 @@ struct rte_eth_dev_sriov {
  * processes in a multi-process configuration.
  */
 struct rte_eth_dev_data {
-	// struct eth_rx_queue **rx_queues; /**< Array of pointers to RX queues. */
-	// struct eth_tx_queue **tx_queues; /**< Array of pointers to TX queues. */
+	struct eth_rx_queue **rx_queues; /**< Array of pointers to RX queues. */
+	struct eth_tx_queue **tx_queues; /**< Array of pointers to TX queues. */
 	// struct eth_fg *rx_fgs; /**< An array of flow groups. */
 	uint16_t nb_rx_queues; /**< Number of RX queues. */
 	uint16_t nb_tx_queues; /**< Number of TX queues. */
@@ -933,7 +935,7 @@ struct rte_eth_dev_data {
 	uint16_t max_tx_queues;
 	uint16_t nb_rx_fgs;
 	
-	// struct rte_eth_dev_sriov sriov;    /**< SRIOV data */
+	struct rte_eth_dev_sriov sriov;    /**< SRIOV data */
 
 	void *dev_private;              /**< PMD-specific private data */
 

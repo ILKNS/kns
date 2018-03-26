@@ -6,5 +6,7 @@ obj-y += ixgbe_mbx.o
 obj-y += ixgbe_82599.o
 obj-y += ixgbe_dcb.o
 obj-y += ixgbe_dcb_82599.o
+obj-y += ixgbe_fdir.o
 obj-y += ixgbe_phy.o
+obj-y += ixgbe_pf.o
 obj-y += ixgbe_rxtx.c

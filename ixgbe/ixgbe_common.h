@@ -14,6 +14,10 @@ static inline uint32_t ixgbe_read_addr(volatile void *addr)
 	return IXGBE_PCI_REG(addr);
 }
 
+#define IXGBE_PCI_REG_WRITE(reg, value) do { \
+	IXGBE_PCI_REG((reg)) = (value); \
+} while(0)
+
 static inline bool ixgbe_removed(void __iomem *addr)
 {
 	return unlikely(!addr);
