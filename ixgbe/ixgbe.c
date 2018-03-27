@@ -2136,7 +2136,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 #endif
 	}
 
-	dev = kmalloc(sizeof(struct ixgbe_adapter), GFP_KERNEL);
+	dev = eth_dev_alloc(sizeof(struct ixgbe_adapter));
 	if (!dev){
 		err = -ENOMEM;
 		goto err_alloc_etherdev;

@@ -32,7 +32,7 @@
  */
 
 #include <net/ethernet.h>
-#include <ethdev.h>
+#include <kns/ethdev.h>
 
 #include "ixgbe_api.h"
 #include "ixgbe_common.h"

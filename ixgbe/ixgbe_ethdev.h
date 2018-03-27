@@ -34,7 +34,7 @@
 #ifndef _IXGBE_ETHDEV_H_
 #define _IXGBE_ETHDEV_H_
 #include <net/ethernet.h>
-#include <mbuf.h>
+#include <kns/mbuf.h>
 #include "ixgbe_dcb.h"
 #include "ixgbe_dcb_82599.h"
 //#include "ixgbe_dcb_82598.h"

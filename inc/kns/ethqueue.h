@@ -5,10 +5,8 @@
 #pragma once
 
 // #include <ix/cpu.h>
-#include <mbuf.h>
-// #include <ix/errno.h>
-// #include <ix/bitmap.h>
-#include <ethfg.h>
+#include <kns/mbuf.h>
+#include <kns/ethfg.h>
 // #ifdef ENABLE_PCAP
 // #include <net/pcap.h>
 // #endif

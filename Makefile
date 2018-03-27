@@ -4,8 +4,7 @@ ifneq ($(KERNELRELEASE),)
 	subdir-ccflags-y += -I$(PWD)/inc
 	SRC  := $(subst $(PWD)/,,$(shell find $(PWD) -name "*.c"))
 	OBJS  := $(subst .c,.o,$(SRC))
-	ixgbe			:= ixgbe/ixgbe_api.o  ixgbe/ixgbe.o  ixgbe/ixgbe_common.o
-	obj-y			:=  ixgbe/
+	obj-y			:=  ixgbe/ core/
 	obj-m 			+=  kix.o
 	kix-objs		:=  init.o $(OBJS)
 else
