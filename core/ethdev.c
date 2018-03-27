@@ -318,17 +318,17 @@ struct rte_eth_dev *eth_dev_alloc(size_t private_len)
 	return dev;
 }
 
-// /**
-//  * eth_dev_destroy - frees an ethernet device
-//  * @dev: the ethernet device
-//  */
-// void eth_dev_destroy(struct rte_eth_dev *dev)
-// {
-// 	if (dev->dev_ops && dev->dev_ops->dev_close)
-// 		dev->dev_ops->dev_close(dev);
+/**
+ * eth_dev_destroy - frees an ethernet device
+ * @dev: the ethernet device
+ */
+void eth_dev_destroy(struct rte_eth_dev *dev)
+{
+	if (dev->dev_ops && dev->dev_ops->dev_close)
+		dev->dev_ops->dev_close(dev);
 
-// 	free(dev->data->dev_private);
-// 	free(dev->data);
-// 	free(dev);
-// }
+	kfree(dev->data->dev_private);
+	kfree(dev->data);
+	kfree(dev);
+}
 

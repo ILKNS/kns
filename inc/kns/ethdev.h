@@ -928,7 +928,7 @@ struct rte_eth_dev_sriov {
 struct rte_eth_dev_data {
 	struct eth_rx_queue **rx_queues; /**< Array of pointers to RX queues. */
 	struct eth_tx_queue **tx_queues; /**< Array of pointers to TX queues. */
-	// struct eth_fg *rx_fgs; /**< An array of flow groups. */
+	struct eth_fg *rx_fgs; /**< An array of flow groups. */
 	uint16_t nb_rx_queues; /**< Number of RX queues. */
 	uint16_t nb_tx_queues; /**< Number of TX queues. */
 	uint16_t max_rx_queues;
@@ -940,18 +940,18 @@ struct rte_eth_dev_data {
 	void *dev_private;              /**< PMD-specific private data */
 
 	struct rte_eth_link dev_link;
-	// /**< Link-level information & status */
+	/**< Link-level information & status */
 
 	struct rte_eth_conf dev_conf;   /**< Configuration applied to device. */
 
-	// uint64_t rx_mbuf_alloc_failed; /**< RX ring mbuf allocation failures. */
-	// struct eth_addr* mac_addrs;/**< Device Ethernet Link address. */
-	// uint64_t mac_pool_sel[ETH_NUM_RECEIVE_MAC_ADDR]; 
-	// /** bitmap array of associating Ethernet MAC addresses to pools */
-	// struct eth_addr* hash_mac_addrs;
+	uint64_t rx_mbuf_alloc_failed; /**< RX ring mbuf allocation failures. */
+	struct eth_addr* mac_addrs;/**< Device Ethernet Link address. */
+	uint64_t mac_pool_sel[ETH_NUM_RECEIVE_MAC_ADDR]; 
+	/** bitmap array of associating Ethernet MAC addresses to pools */
+	struct eth_addr* hash_mac_addrs;
 
 	uint32_t max_frame_size;
-	// /** Device Ethernet MAC addresses of hash filtering. */
+	/** Device Ethernet MAC addresses of hash filtering. */
 	uint8_t port_id;           /**< Device [external] port identifier. */
 	uint8_t promiscuous   : 1, /**< RX promiscuous mode ON(1) / OFF(0). */
 		scattered_rx : 1,  /**< RX of scattered packets is ON(1) / OFF(0) */

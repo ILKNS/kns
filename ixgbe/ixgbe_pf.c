@@ -37,86 +37,86 @@
 
 #define IXGBE_MAX_VFTA     (128)
 
-// static inline 
-// int ixgbe_vf_perm_addr_gen(struct rte_eth_dev *dev, uint16_t vf_num)
-// {
-// 	unsigned char vf_mac_addr[ETH_ADDR_LEN];
-// 	struct ixgbe_vf_info *vfinfo = 
-// 		*IXGBE_DEV_PRIVATE_TO_P_VFDATA(dev->data->dev_private);
-// 	uint16_t vfn;
+static inline 
+int ixgbe_vf_perm_addr_gen(struct rte_eth_dev *dev, uint16_t vf_num)
+{
+	unsigned char vf_mac_addr[ETH_ADDR_LEN];
+	struct ixgbe_vf_info *vfinfo = 
+		*IXGBE_DEV_PRIVATE_TO_P_VFDATA(dev->data->dev_private);
+	uint16_t vfn;
 
-// 	for (vfn = 0; vfn < vf_num; vfn++) {
-// 		//FIXME: eth_random_addr(vf_mac_addr);
-// 		/* keep the random address as default */
-// 		memcpy(vfinfo[vfn].vf_mac_addresses, vf_mac_addr, 
-// 			   ETH_ADDR_LEN);
-// 	}
+	for (vfn = 0; vfn < vf_num; vfn++) {
+		//FIXME: eth_random_addr(vf_mac_addr);
+		/* keep the random address as default */
+		memcpy(vfinfo[vfn].vf_mac_addresses, vf_mac_addr, 
+			   ETH_ADDR_LEN);
+	}
 
-// 	return 0;
-// }
+	return 0;
+}
 
-// static inline int
-// ixgbe_mb_intr_setup(struct rte_eth_dev *dev)
-// {
-// 	struct ixgbe_interrupt *intr =
-// 		IXGBE_DEV_PRIVATE_TO_INTR(dev->data->dev_private);
+static inline int
+ixgbe_mb_intr_setup(struct rte_eth_dev *dev)
+{
+	struct ixgbe_interrupt *intr =
+		IXGBE_DEV_PRIVATE_TO_INTR(dev->data->dev_private);
 
-// 	intr->mask |= IXGBE_EICR_MAILBOX;
+	intr->mask |= IXGBE_EICR_MAILBOX;
 
-// 	return 0;
-// }
+	return 0;
+}
 
-// void ixgbe_pf_host_init(struct rte_eth_dev *eth_dev)
-// {
-// 	struct ixgbe_vf_info **vfinfo = 
-// 		IXGBE_DEV_PRIVATE_TO_P_VFDATA(eth_dev->data->dev_private);
-// 	struct ixgbe_mirror_info *mirror_info =
-//         IXGBE_DEV_PRIVATE_TO_PFDATA(eth_dev->data->dev_private);
-// 	struct ixgbe_uta_info *uta_info =
-//         IXGBE_DEV_PRIVATE_TO_UTA(eth_dev->data->dev_private);
-// 	struct ixgbe_hw *hw = 
-// 		IXGBE_DEV_PRIVATE_TO_HW(eth_dev->data->dev_private);
-// 	uint16_t vf_num = hw->num_vfs;
-// 	uint8_t nb_queue;
+void ixgbe_pf_host_init(struct rte_eth_dev *eth_dev)
+{
+	struct ixgbe_vf_info **vfinfo = 
+		IXGBE_DEV_PRIVATE_TO_P_VFDATA(eth_dev->data->dev_private);
+	struct ixgbe_mirror_info *mirror_info =
+        IXGBE_DEV_PRIVATE_TO_PFDATA(eth_dev->data->dev_private);
+	struct ixgbe_uta_info *uta_info =
+        IXGBE_DEV_PRIVATE_TO_UTA(eth_dev->data->dev_private);
+	struct ixgbe_hw *hw = 
+		IXGBE_DEV_PRIVATE_TO_HW(eth_dev->data->dev_private);
+	uint16_t vf_num = hw->num_vfs;
+	uint8_t nb_queue;
 
-// 	RTE_ETH_DEV_SRIOV(eth_dev).active = 0;
-// 	if (!vf_num)
-// 		return;
+	RTE_ETH_DEV_SRIOV(eth_dev).active = 0;
+	if (!vf_num)
+		return;
 
-// 	*vfinfo = malloc(sizeof(struct ixgbe_vf_info) * vf_num);
-// 	if (*vfinfo == NULL)
-// 		panic("Cannot allocate memory for private VF data\n");
-// 	memset(vfinfo, 0, sizeof(struct ixgbe_vf_info) * vf_num);
+	*vfinfo = kmalloc(sizeof(struct ixgbe_vf_info) * vf_num, GFP_KERNEL);
+	if (*vfinfo == NULL)
+		panic("Cannot allocate memory for private VF data\n");
+	memset(vfinfo, 0, sizeof(struct ixgbe_vf_info) * vf_num);
 
-// 	memset(mirror_info,0,sizeof(struct ixgbe_mirror_info));
-// 	memset(uta_info,0,sizeof(struct ixgbe_uta_info));
-// 	hw->mac.mc_filter_type = 0;
+	memset(mirror_info,0,sizeof(struct ixgbe_mirror_info));
+	memset(uta_info,0,sizeof(struct ixgbe_uta_info));
+	hw->mac.mc_filter_type = 0;
 
-// 	if (vf_num >= ETH_32_POOLS) {
-// 		nb_queue = 2;
-// 		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_64_POOLS;
-// 	} else if (vf_num >= ETH_16_POOLS) {
-// 		nb_queue = 4;
-// 		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_32_POOLS;
-// 	} else {
-// 		nb_queue = 8;
-// 		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_16_POOLS;
-// 	}
+	if (vf_num >= ETH_32_POOLS) {
+		nb_queue = 2;
+		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_64_POOLS;
+	} else if (vf_num >= ETH_16_POOLS) {
+		nb_queue = 4;
+		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_32_POOLS;
+	} else {
+		nb_queue = 8;
+		RTE_ETH_DEV_SRIOV(eth_dev).active = ETH_16_POOLS;
+	}
 
-// 	RTE_ETH_DEV_SRIOV(eth_dev).nb_q_per_pool = nb_queue;
-// 	RTE_ETH_DEV_SRIOV(eth_dev).def_vmdq_idx = vf_num;
-// 	RTE_ETH_DEV_SRIOV(eth_dev).def_pool_q_idx = (uint16_t)(vf_num * nb_queue);
+	RTE_ETH_DEV_SRIOV(eth_dev).nb_q_per_pool = nb_queue;
+	RTE_ETH_DEV_SRIOV(eth_dev).def_vmdq_idx = vf_num;
+	RTE_ETH_DEV_SRIOV(eth_dev).def_pool_q_idx = (uint16_t)(vf_num * nb_queue);
 
-// 	ixgbe_vf_perm_addr_gen(eth_dev, vf_num);
+	ixgbe_vf_perm_addr_gen(eth_dev, vf_num);
 
-// 	/* init_mailbox_params */
-// 	hw->mbx.ops.init_params(hw);
+	/* init_mailbox_params */
+	hw->mbx.ops.init_params(hw);
 
-// 	/* set mb interrupt mask */
-// 	ixgbe_mb_intr_setup(eth_dev);
+	/* set mb interrupt mask */
+	ixgbe_mb_intr_setup(eth_dev);
 
-// 	return;
-// }
+	return;
+}
 
 int ixgbe_pf_host_configure(struct rte_eth_dev *eth_dev)
 {

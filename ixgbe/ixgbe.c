@@ -212,7 +212,7 @@ static int ixgbe_dev_lsc_interrupt_setup(struct rte_eth_dev *dev);
 static void ixgbe_add_rar(struct rte_eth_dev *dev, struct eth_addr *mac_addr,
 		uint32_t index, uint32_t pool);
 static void ixgbe_remove_rar(struct rte_eth_dev *dev, uint32_t index);
-//static void ixgbe_dcb_init(struct ixgbe_hw *hw,struct ixgbe_dcb_config *dcb_config);
+static void ixgbe_dcb_init(struct ixgbe_hw *hw,struct ixgbe_dcb_config *dcb_config);
 
 /* For Eth VMDQ APIs support */
 static int ixgbe_uc_hash_table_set(struct rte_eth_dev *dev, struct
@@ -424,6 +424,23 @@ ixgbe_disable_intr(struct ixgbe_hw *hw)
 		IXGBE_WRITE_REG(hw, IXGBE_EIMC_EX(1), ~0);
 	}
 	IXGBE_WRITE_FLUSH(hw);
+}
+
+/*
+ * This function resets queue statistics mapping registers.
+ * From Niantic datasheet, Initialization of Statistics section:
+ * "...if software requires the queue counters, the RQSMR and TQSM registers
+ * must be re-programmed following a device reset.
+ */
+static void
+ixgbe_reset_qstat_mappings(struct ixgbe_hw *hw)
+{
+	uint32_t i;
+
+	for(i = 0; i != IXGBE_NB_STAT_MAPPING_REGS; i++) {
+		IXGBE_WRITE_REG(hw, IXGBE_RQSMR(i), 0);
+		IXGBE_WRITE_REG(hw, IXGBE_TQSM(i), 0);
+	}
 }
 
 static void
@@ -2064,6 +2081,178 @@ ixgbe_mirror_rule_reset(struct rte_eth_dev *dev, uint8_t rule_id)
 	return 0;
 }
 
+static void
+ixgbe_dcb_init(struct ixgbe_hw *hw,struct ixgbe_dcb_config *dcb_config)
+{
+	uint8_t i;
+	struct ixgbe_dcb_tc_config *tc;
+	uint8_t dcb_max_tc = MAX_TRAFFIC_CLASS;
+
+	dcb_config->num_tcs.pg_tcs = dcb_max_tc;
+	dcb_config->num_tcs.pfc_tcs = dcb_max_tc;
+	for (i = 0; i < dcb_max_tc; i++) {
+		tc = &dcb_config->tc_config[i];
+		tc->path[IXGBE_DCB_TX_CONFIG].bwg_id = i;
+		tc->path[IXGBE_DCB_TX_CONFIG].bwg_percent =
+				 (uint8_t)(100/dcb_max_tc + (i & 1));
+		tc->path[IXGBE_DCB_RX_CONFIG].bwg_id = i;
+		tc->path[IXGBE_DCB_RX_CONFIG].bwg_percent =
+				 (uint8_t)(100/dcb_max_tc + (i & 1));
+		tc->pfc = ixgbe_dcb_pfc_disabled;
+	}
+
+	/* Initialize default user to priority mapping, UPx->TC0 */
+	tc = &dcb_config->tc_config[0];
+	tc->path[IXGBE_DCB_TX_CONFIG].up_to_tc_bitmap = 0xFF;
+	tc->path[IXGBE_DCB_RX_CONFIG].up_to_tc_bitmap = 0xFF;
+	for (i = 0; i< IXGBE_DCB_MAX_BW_GROUP; i++) {
+		dcb_config->bw_percentage[IXGBE_DCB_TX_CONFIG][i] = 100;
+		dcb_config->bw_percentage[IXGBE_DCB_RX_CONFIG][i] = 100;
+	}
+	dcb_config->rx_pba_cfg = ixgbe_dcb_pba_equal;
+	dcb_config->pfc_mode_enable = false;
+	dcb_config->vt_mode = true;
+	dcb_config->round_robin_enable = false;
+	/* support all DCB capabilities in 82599 */
+	dcb_config->support.capabilities = 0xFF;
+
+	/*we only support 4 Tcs for X540*/
+	if (hw->mac.type == ixgbe_mac_X540) {
+		dcb_config->num_tcs.pg_tcs = 4;
+		dcb_config->num_tcs.pfc_tcs = 4;
+	}
+}
+
+static int ixgbe_init_adapter(struct rte_eth_dev *dev)
+{
+	struct ixgbe_hw *hw =
+		IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	struct ixgbe_vfta * shadow_vfta =
+		IXGBE_DEV_PRIVATE_TO_VFTA(dev->data->dev_private);
+	struct ixgbe_hwstrip *hwstrip =
+		IXGBE_DEV_PRIVATE_TO_HWSTRIP_BITMAP(dev->data->dev_private);
+	struct ixgbe_dcb_config *dcb_config =
+		IXGBE_DEV_PRIVATE_TO_DCB_CFG(dev->data->dev_private);
+	uint32_t ctrl_ext;
+	uint16_t csum;
+	int diag, i;
+
+	/* Initialize the shared code */
+	diag = ixgbe_init_shared_code(hw);
+	if (diag != IXGBE_SUCCESS) {
+		printk(KERN_ERR "ixgbe: Shared code init failed: %d", diag);
+		return -EIO;
+	}
+
+	/* Initialize DCB configuration*/
+	memset(dcb_config, 0, sizeof(struct ixgbe_dcb_config));
+	ixgbe_dcb_init(hw,dcb_config);
+
+	/* Get Hardware Flow Control setting */
+	hw->fc.requested_mode = ixgbe_fc_full;
+	hw->fc.current_mode = ixgbe_fc_full;
+	hw->fc.pause_time = IXGBE_FC_PAUSE;
+	for (i = 0; i < MAX_TRAFFIC_CLASS; i++) {
+		hw->fc.low_water[i] = IXGBE_FC_LO;
+		hw->fc.high_water[i] = IXGBE_FC_HI;
+	}
+	hw->fc.send_xon = 1;
+
+	/* Make sure we have a good EEPROM before we read from it */
+	diag = ixgbe_validate_eeprom_checksum(hw, &csum);
+	if (diag != IXGBE_SUCCESS) {
+		printk(KERN_ERR "ixgbe: The EEPROM checksum is not valid: %d", diag);
+		return -EIO;
+	}
+
+	diag = ixgbe_init_hw(hw);
+
+	/*
+	 * Devices with copper phys will fail to initialise if ixgbe_init_hw()
+	 * is called too soon after the kernel driver unbinding/binding occurs.
+	 * The failure occurs in ixgbe_identify_phy_generic() for all devices,
+	 * but for non-copper devies, ixgbe_identify_sfp_module_generic() is
+	 * also called. See ixgbe_identify_phy_82599(). The reason for the
+	 * failure is not known, and only occuts when virtualisation features
+	 * are disabled in the bios. A delay of 100ms  was found to be enough by
+	 * trial-and-error, and is doubled to be safe.
+	 */
+	if (diag && (hw->mac.ops.get_media_type(hw) == ixgbe_media_type_copper)) {
+		mdelay(200);
+		diag = ixgbe_init_hw(hw);
+	}
+
+	if (diag == IXGBE_ERR_EEPROM_VERSION) {
+		printk(KERN_ERR "ixgbe: This device is a pre-production adapter/"
+		    "LOM.  Please be aware there may be issues associated "
+		    "with your hardware.\n If you are experiencing problems "
+		    "please contact your Intel or hardware representative "
+		    "who provided you with this hardware.\n");
+	} else if (diag == IXGBE_ERR_SFP_NOT_SUPPORTED)
+		printk(KERN_ERR "ixgbe: Unsupported SFP+ Module\n");
+	if (diag) {
+		printk(KERN_ERR "ixgbe: Hardware Initialization Failure: %d", diag);
+		return -EIO;
+	}
+
+	/* disable interrupt */
+	ixgbe_disable_intr(hw);
+
+	/* pick up the PCI bus settings for reporting later */
+	ixgbe_get_bus_info(hw);
+
+	/* reset mappings for queue statistics hw counters*/
+	ixgbe_reset_qstat_mappings(hw);
+
+	/* Allocate memory for storing MAC addresses */
+	dev->data->mac_addrs = kmalloc(hw->mac.num_rar_entries*ETH_ADDR_LEN, GFP_KERNEL);
+	if (!dev->data->mac_addrs) {
+		printk(KERN_ERR "ixgbe: Failed to allocate %d bytes needed to store MAC addresses",
+			ETH_ADDR_LEN * hw->mac.num_rar_entries);
+		return -ENOMEM;
+	}
+
+	/* Copy the permanent MAC address */
+	memcpy(&dev->data->mac_addrs[0], hw->mac.perm_addr, ETH_ADDR_LEN);
+
+	/* Allocate memory for storing hash filter MAC addresses */
+	dev->data->hash_mac_addrs = kmalloc(ETH_ADDR_LEN * IXGBE_VMDQ_NUM_UC_MAC, GFP_KERNEL);
+	if (!dev->data->hash_mac_addrs) {
+		printk(KERN_ERR "ixgbe: Failed to allocate %d bytes needed to store MAC addresses",
+			ETH_ADDR_LEN * IXGBE_VMDQ_NUM_UC_MAC);
+		return -ENOMEM;
+	}
+	memset(dev->data->hash_mac_addrs, 0, ETH_ADDR_LEN * IXGBE_VMDQ_NUM_UC_MAC);
+
+	/* initialize the vfta */
+	memset(shadow_vfta, 0, sizeof(*shadow_vfta));
+
+	/* initialize the hw strip bitmap*/
+	memset(hwstrip, 0, sizeof(*hwstrip));
+
+	/* initialize PF if max_vfs not zero */
+	ixgbe_pf_host_init(dev);
+
+	ctrl_ext = IXGBE_READ_REG(hw, IXGBE_CTRL_EXT);
+	/* let hardware know driver is loaded */
+	ctrl_ext |= IXGBE_CTRL_EXT_DRV_LOAD;
+	/* Set PF Reset Done bit so PF/VF Mail Ops can work */
+	ctrl_ext |= IXGBE_CTRL_EXT_PFRSTD;
+	IXGBE_WRITE_REG(hw, IXGBE_CTRL_EXT, ctrl_ext);
+	IXGBE_WRITE_FLUSH(hw);
+
+	if (ixgbe_is_sfp(hw) && hw->phy.sfp_type != ixgbe_sfp_type_not_present)
+		printk(KERN_DEBUG"ixgbe: MAC: %d, PHY: %d, SFP+: %d\n",
+			  (int) hw->mac.type, (int) hw->phy.type,
+			  (int) hw->phy.sfp_type);
+	else
+		printk(KERN_DEBUG"ixgbe: MAC: %d, PHY: %d\n",
+			  (int) hw->mac.type, (int) hw->phy.type);
+
+	return 0;
+}
+
+
 /**
  * ixgbe_probe - Device Initialization Routine
  * @pdev: PCI device information struct
@@ -2155,6 +2344,12 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	if (!hw->hw_addr) {
 		err = -EIO;
 		goto err_ioremap;
+	}
+
+	err = ixgbe_init_adapter(dev);
+	if(err){
+		printk(KERN_ERR "ixgbe: failed to initialize adapter.");
+		//goto
 	}
 
 // 	netdev->netdev_ops = &ixgbe_netdev_ops;
@@ -2261,12 +2456,12 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 // 			   NETIF_F_RXCSUM |
 // 			   NETIF_F_HW_CSUM;
 
-#define IXGBE_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
+/*#define IXGBE_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
 				    NETIF_F_GSO_GRE_CSUM | \
 				    NETIF_F_GSO_IPXIP4 | \
 				    NETIF_F_GSO_IPXIP6 | \
 				    NETIF_F_GSO_UDP_TUNNEL | \
-				    NETIF_F_GSO_UDP_TUNNEL_CSUM)
+				    NETIF_F_GSO_UDP_TUNNEL_CSUM)*/
 
 // 	netdev->gso_partial_features = IXGBE_GSO_PARTIAL_FEATURES;
 // 	netdev->features |= NETIF_F_GSO_PARTIAL |
@@ -2514,8 +2709,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 // 	kfree(adapter->mac_table);
 // 	kfree(adapter->rss_key);
 err_ioremap:
-// 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
-// 	free(dev);
+ 	eth_dev_destroy(dev);
 err_alloc_etherdev:
  	pci_release_mem_regions(pdev);
 err_pci_reg:
