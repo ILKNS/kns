@@ -29,19 +29,6 @@
 #ifndef _IXGBE_H_
 #define _IXGBE_H_
 
-// #include <linux/bitops.h>
-// #include <linux/types.h>
-// #include <linux/pci.h>
-// #include <linux/netdevice.h>
-// #include <linux/cpumask.h>
-// #include <linux/aer.h>
-// #include <linux/if_vlan.h>
-// #include <linux/jiffies.h>
-
-// #include <linux/timecounter.h>
-// #include <linux/net_tstamp.h>
-// #include <linux/ptp_clock_kernel.h>
-
 // #include "ixgbe_type.h"
 // #include "ixgbe_common.h"
 // #include "ixgbe_dcb.h"

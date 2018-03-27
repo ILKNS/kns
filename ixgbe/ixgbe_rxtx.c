@@ -2,7 +2,7 @@
  * ixgbe_rxtx.c - IXGBE RX and TX queue support
  */
 
-#include <ethdev.h>
+#include <kns/ethdev.h>
 
 #include "ixgbe_api.h"
 #include "ixgbe_vf.h"

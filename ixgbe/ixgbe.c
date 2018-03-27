@@ -4,9 +4,9 @@
 #include <linux/aer.h>
 #include <linux/spinlock.h>
 
-#include <ixgbe_setup.h>
-#include <ethdev.h>
-#include <errno.h>
+#include <kns/ixgbe_setup.h>
+#include <kns/ethdev.h>
+#include <kns/errno.h>
 #include "ixgbe.h"
 #include "ixgbe_api.h"
 #include "ixgbe_dcb.h"
@@ -2150,21 +2150,12 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	hw->vendor_id = pdev->vendor;
 	hw->num_vfs = max_vfs;//TO BE FIXED
 
-// 	adapter = netdev_priv(netdev);
-
-// 	adapter->netdev = netdev;
-// 	adapter->pdev = pdev;
-// 	hw = &adapter->hw;
-// 	hw->back = adapter;
-// 	adapter->msg_enable = netif_msg_init(debug, DEFAULT_MSG_ENABLE);
-
-// 	hw->hw_addr = ioremap(pci_resource_start(pdev, 0),
-// 			      pci_resource_len(pdev, 0));
-// 	adapter->io_addr = hw->hw_addr;
-// 	if (!hw->hw_addr) {
-// 		err = -EIO;
-// 		goto err_ioremap;
-// 	}
+	hw->hw_addr = ioremap(pci_resource_start(pdev, 0),
+			      pci_resource_len(pdev, 0));
+	if (!hw->hw_addr) {
+		err = -EIO;
+		goto err_ioremap;
+	}
 
 // 	netdev->netdev_ops = &ixgbe_netdev_ops;
 // 	ixgbe_set_ethtool_ops(netdev);
@@ -2522,9 +2513,9 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 // 	kfree(adapter->jump_tables[0]);
 // 	kfree(adapter->mac_table);
 // 	kfree(adapter->rss_key);
-// err_ioremap:
+err_ioremap:
 // 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
-// 	free_netdev(netdev);
+// 	free(dev);
 err_alloc_etherdev:
  	pci_release_mem_regions(pdev);
 err_pci_reg:

@@ -1,6 +1,6 @@
 #include <linux/init.h>
 #include <linux/module.h>
-#include <ixgbe_setup.h>
+#include <kns/ixgbe_setup.h>
 
 MODULE_LICENSE("GPL");
 

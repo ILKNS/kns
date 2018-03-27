@@ -298,573 +298,573 @@ ixgbe_atr_compute_hash_82599(union ixgbe_atr_input *atr_input,
 	return hash_result;
 }
 
-// /*
-//  * Calculate the hash value needed for signature-match filters. In the FreeBSD
-//  * driver, this is done by the optimised function
-//  * ixgbe_atr_compute_sig_hash_82599(). However that can't be used here as it
-//  * doesn't support calculating a hash for an IPv6 filter.
-//  */
-// static uint32_t
-// atr_compute_sig_hash_82599(union ixgbe_atr_input *input,
-// 		enum rte_fdir_pballoc_type pballoc)
-// {
-// 	uint32_t bucket_hash, sig_hash;
+/*
+ * Calculate the hash value needed for signature-match filters. In the FreeBSD
+ * driver, this is done by the optimised function
+ * ixgbe_atr_compute_sig_hash_82599(). However that can't be used here as it
+ * doesn't support calculating a hash for an IPv6 filter.
+ */
+static uint32_t
+atr_compute_sig_hash_82599(union ixgbe_atr_input *input,
+		enum rte_fdir_pballoc_type pballoc)
+{
+	uint32_t bucket_hash, sig_hash;
 
-// 	if (pballoc == RTE_FDIR_PBALLOC_256K)
-// 		bucket_hash = ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				SIG_BUCKET_256KB_HASH_MASK;
-// 	else if (pballoc == RTE_FDIR_PBALLOC_128K)
-// 		bucket_hash = ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				SIG_BUCKET_128KB_HASH_MASK;
-// 	else
-// 		bucket_hash = ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				SIG_BUCKET_64KB_HASH_MASK;
+	if (pballoc == RTE_FDIR_PBALLOC_256K)
+		bucket_hash = ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				SIG_BUCKET_256KB_HASH_MASK;
+	else if (pballoc == RTE_FDIR_PBALLOC_128K)
+		bucket_hash = ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				SIG_BUCKET_128KB_HASH_MASK;
+	else
+		bucket_hash = ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				SIG_BUCKET_64KB_HASH_MASK;
 
-// 	sig_hash = ixgbe_atr_compute_hash_82599(input,
-// 			IXGBE_ATR_SIGNATURE_HASH_KEY);
+	sig_hash = ixgbe_atr_compute_hash_82599(input,
+			IXGBE_ATR_SIGNATURE_HASH_KEY);
 
-// 	return (sig_hash << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT) | bucket_hash;
-// }
+	return (sig_hash << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT) | bucket_hash;
+}
 
-// /**
-//  * This function is based on ixgbe_atr_add_signature_filter_82599() in
-//  * ixgbe/ixgbe_82599.c, but uses a pre-calculated hash value. It also supports
-//  * setting extra fields in the FDIRCMD register, and removes the code that was
-//  * verifying the flow_type field. According to the documentation, a flow type of
-//  * 00 (i.e. not TCP, UDP, or SCTP) is not supported, however it appears to
-//  * work ok...
-//  *
-//  *  Adds a signature hash filter
-//  *  @hw: pointer to hardware structure
-//  *  @input: unique input dword
-//  *  @queue: queue index to direct traffic to
-//  *  @fdircmd: any extra flags to set in fdircmd register
-//  *  @fdirhash: pre-calculated hash value for the filter
-//  **/
-// static void
-// fdir_add_signature_filter_82599(struct ixgbe_hw *hw,
-// 		union ixgbe_atr_input *input, u8 queue, u32 fdircmd,
-// 		u32 fdirhash)
-// {
-// 	u64  fdirhashcmd;
+/**
+ * This function is based on ixgbe_atr_add_signature_filter_82599() in
+ * ixgbe/ixgbe_82599.c, but uses a pre-calculated hash value. It also supports
+ * setting extra fields in the FDIRCMD register, and removes the code that was
+ * verifying the flow_type field. According to the documentation, a flow type of
+ * 00 (i.e. not TCP, UDP, or SCTP) is not supported, however it appears to
+ * work ok...
+ *
+ *  Adds a signature hash filter
+ *  @hw: pointer to hardware structure
+ *  @input: unique input dword
+ *  @queue: queue index to direct traffic to
+ *  @fdircmd: any extra flags to set in fdircmd register
+ *  @fdirhash: pre-calculated hash value for the filter
+ **/
+static void
+fdir_add_signature_filter_82599(struct ixgbe_hw *hw,
+		union ixgbe_atr_input *input, u8 queue, u32 fdircmd,
+		u32 fdirhash)
+{
+	u64  fdirhashcmd;
 
-// 	/* configure FDIRCMD register */
-// 	fdircmd |= IXGBE_FDIRCMD_CMD_ADD_FLOW |
-// 	          IXGBE_FDIRCMD_LAST | IXGBE_FDIRCMD_QUEUE_EN;
-// 	fdircmd |= input->formatted.flow_type << IXGBE_FDIRCMD_FLOW_TYPE_SHIFT;
-// 	fdircmd |= (u32)queue << IXGBE_FDIRCMD_RX_QUEUE_SHIFT;
+	/* configure FDIRCMD register */
+	fdircmd |= IXGBE_FDIRCMD_CMD_ADD_FLOW |
+	          IXGBE_FDIRCMD_LAST | IXGBE_FDIRCMD_QUEUE_EN;
+	fdircmd |= input->formatted.flow_type << IXGBE_FDIRCMD_FLOW_TYPE_SHIFT;
+	fdircmd |= (u32)queue << IXGBE_FDIRCMD_RX_QUEUE_SHIFT;
 
-// 	/*
-// 	 * The lower 32-bits of fdirhashcmd is for FDIRHASH, the upper 32-bits
-// 	 * is for FDIRCMD.  Then do a 64-bit register write from FDIRHASH.
-// 	 */
-// 	fdirhashcmd = (u64)fdircmd << 32;
-// 	fdirhashcmd |= fdirhash;
-// 	IXGBE_WRITE_REG64(hw, IXGBE_FDIRHASH, fdirhashcmd);
+	/*
+	 * The lower 32-bits of fdirhashcmd is for FDIRHASH, the upper 32-bits
+	 * is for FDIRCMD.  Then do a 64-bit register write from FDIRHASH.
+	 */
+	fdirhashcmd = (u64)fdircmd << 32;
+	fdirhashcmd |= fdirhash;
+	IXGBE_WRITE_REG64(hw, IXGBE_FDIRHASH, fdirhashcmd);
 
-// 	log_debug("ixgbe: Tx Queue=%x hash=%x\n", queue, (u32)fdirhashcmd);
-// }
+	printk(KERN_ERR"ixgbe: Tx Queue=%x hash=%x\n", queue, (u32)fdirhashcmd);
+}
 
-// /*
-//  * Convert DPDK rte_fdir_filter struct to ixgbe_atr_input union that is used
-//  * by the IXGBE driver code.
-//  */
-// static int
-// fdir_filter_to_atr_input(struct rte_fdir_filter *fdir_filter,
-// 		union ixgbe_atr_input *input)
-// {
-// 	if ((fdir_filter->l4type == RTE_FDIR_L4TYPE_SCTP ||
-// 			fdir_filter->l4type == RTE_FDIR_L4TYPE_NONE) &&
-// 			(fdir_filter->port_src || fdir_filter->port_dst)) {
-// 		log_err("ixgbe: Invalid fdir_filter");
-// 		return -EINVAL;
-// 	}
+/*
+ * Convert DPDK rte_fdir_filter struct to ixgbe_atr_input union that is used
+ * by the IXGBE driver code.
+ */
+static int
+fdir_filter_to_atr_input(struct rte_fdir_filter *fdir_filter,
+		union ixgbe_atr_input *input)
+{
+	if ((fdir_filter->l4type == RTE_FDIR_L4TYPE_SCTP ||
+			fdir_filter->l4type == RTE_FDIR_L4TYPE_NONE) &&
+			(fdir_filter->port_src || fdir_filter->port_dst)) {
+		printk(KERN_ERR"ixgbe: Invalid fdir_filter");
+		return -EINVAL;
+	}
 
-// 	memset(input, 0, sizeof(*input));
+	memset(input, 0, sizeof(*input));
 
-// 	input->formatted.vlan_id = fdir_filter->vlan_id;
-// 	input->formatted.src_port = fdir_filter->port_src;
-// 	input->formatted.dst_port = fdir_filter->port_dst;
-// 	input->formatted.flex_bytes = fdir_filter->flex_bytes;
+	input->formatted.vlan_id = fdir_filter->vlan_id;
+	input->formatted.src_port = fdir_filter->port_src;
+	input->formatted.dst_port = fdir_filter->port_dst;
+	input->formatted.flex_bytes = fdir_filter->flex_bytes;
 
-// 	switch (fdir_filter->l4type) {
-// 	case RTE_FDIR_L4TYPE_TCP:
-// 		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_TCPV4;
-// 		break;
-// 	case RTE_FDIR_L4TYPE_UDP:
-// 		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_UDPV4;
-// 		break;
-// 	case RTE_FDIR_L4TYPE_SCTP:
-// 		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_SCTPV4;
-// 		break;
-// 	case RTE_FDIR_L4TYPE_NONE:
-// 		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_IPV4;
-// 		break;
-// 	default:
-// 		log_err("ixgbe: Error on l4type input");
-// 		return -EINVAL;
-// 	}
+	switch (fdir_filter->l4type) {
+	case RTE_FDIR_L4TYPE_TCP:
+		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_TCPV4;
+		break;
+	case RTE_FDIR_L4TYPE_UDP:
+		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_UDPV4;
+		break;
+	case RTE_FDIR_L4TYPE_SCTP:
+		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_SCTPV4;
+		break;
+	case RTE_FDIR_L4TYPE_NONE:
+		input->formatted.flow_type = IXGBE_ATR_FLOW_TYPE_IPV4;
+		break;
+	default:
+		printk(KERN_ERR"ixgbe: Error on l4type input");
+		return -EINVAL;
+	}
 
-// 	if (fdir_filter->iptype == RTE_FDIR_IPTYPE_IPV6) {
-// 		input->formatted.flow_type |= IXGBE_ATR_L4TYPE_IPV6_MASK;
+	if (fdir_filter->iptype == RTE_FDIR_IPTYPE_IPV6) {
+		input->formatted.flow_type |= IXGBE_ATR_L4TYPE_IPV6_MASK;
 
-// 		input->formatted.src_ip[0] = fdir_filter->ip_src.ipv6_addr[0];
-// 		input->formatted.src_ip[1] = fdir_filter->ip_src.ipv6_addr[1];
-// 		input->formatted.src_ip[2] = fdir_filter->ip_src.ipv6_addr[2];
-// 		input->formatted.src_ip[3] = fdir_filter->ip_src.ipv6_addr[3];
+		input->formatted.src_ip[0] = fdir_filter->ip_src.ipv6_addr[0];
+		input->formatted.src_ip[1] = fdir_filter->ip_src.ipv6_addr[1];
+		input->formatted.src_ip[2] = fdir_filter->ip_src.ipv6_addr[2];
+		input->formatted.src_ip[3] = fdir_filter->ip_src.ipv6_addr[3];
 
-// 		input->formatted.dst_ip[0] = fdir_filter->ip_dst.ipv6_addr[0];
-// 		input->formatted.dst_ip[1] = fdir_filter->ip_dst.ipv6_addr[1];
-// 		input->formatted.dst_ip[2] = fdir_filter->ip_dst.ipv6_addr[2];
-// 		input->formatted.dst_ip[3] = fdir_filter->ip_dst.ipv6_addr[3];
+		input->formatted.dst_ip[0] = fdir_filter->ip_dst.ipv6_addr[0];
+		input->formatted.dst_ip[1] = fdir_filter->ip_dst.ipv6_addr[1];
+		input->formatted.dst_ip[2] = fdir_filter->ip_dst.ipv6_addr[2];
+		input->formatted.dst_ip[3] = fdir_filter->ip_dst.ipv6_addr[3];
 
-// 	} else {
-// 		input->formatted.src_ip[0] = fdir_filter->ip_src.ipv4_addr;
-// 		input->formatted.dst_ip[0] = fdir_filter->ip_dst.ipv4_addr;
-// 	}
+	} else {
+		input->formatted.src_ip[0] = fdir_filter->ip_src.ipv4_addr;
+		input->formatted.dst_ip[0] = fdir_filter->ip_dst.ipv4_addr;
+	}
 
-// 	return 0;
-// }
+	return 0;
+}
 
-// /*
-//  * Adds or updates a signature filter.
-//  *
-//  * dev: ethernet device to add filter to
-//  * fdir_filter: filter details
-//  * queue: queue index to direct traffic to
-//  * update: 0 to add a new filter, otherwise update existing.
-//  */
-// static int
-// fdir_add_update_signature_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint8_t queue, int update)
-// {
-// 	struct ixgbe_hw *hw= IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-// 	uint32_t fdircmd_flags = (update) ? IXGBE_FDIRCMD_FILTER_UPDATE : 0;
-// 	uint32_t fdirhash;
-// 	union ixgbe_atr_input input;
-// 	int err;
+/*
+ * Adds or updates a signature filter.
+ *
+ * dev: ethernet device to add filter to
+ * fdir_filter: filter details
+ * queue: queue index to direct traffic to
+ * update: 0 to add a new filter, otherwise update existing.
+ */
+static int
+fdir_add_update_signature_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint8_t queue, int update)
+{
+	struct ixgbe_hw *hw= IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	uint32_t fdircmd_flags = (update) ? IXGBE_FDIRCMD_FILTER_UPDATE : 0;
+	uint32_t fdirhash;
+	union ixgbe_atr_input input;
+	int err;
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return -ENOSYS;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return -ENOSYS;
 
-// 	err = fdir_filter_to_atr_input(fdir_filter, &input);
-// 	if (err)
-// 		return err;
+	err = fdir_filter_to_atr_input(fdir_filter, &input);
+	if (err)
+		return err;
 
-// 	fdirhash = atr_compute_sig_hash_82599(&input,
-// 			dev->data->dev_conf.fdir_conf.pballoc);
-// 	fdir_add_signature_filter_82599(hw, &input, queue, fdircmd_flags,
-// 			fdirhash);
-// 	return 0;
-// }
+	fdirhash = atr_compute_sig_hash_82599(&input,
+			dev->data->dev_conf.fdir_conf.pballoc);
+	fdir_add_signature_filter_82599(hw, &input, queue, fdircmd_flags,
+			fdirhash);
+	return 0;
+}
 
-// int
-// ixgbe_fdir_add_signature_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint8_t queue)
-// {
-// 	return fdir_add_update_signature_filter(dev, fdir_filter, queue, 0);
-// }
+int
+ixgbe_fdir_add_signature_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint8_t queue)
+{
+	return fdir_add_update_signature_filter(dev, fdir_filter, queue, 0);
+}
 
-// int
-// ixgbe_fdir_update_signature_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint8_t queue)
-// {
-// 	return fdir_add_update_signature_filter(dev, fdir_filter, queue, 1);
-// }
+int
+ixgbe_fdir_update_signature_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint8_t queue)
+{
+	return fdir_add_update_signature_filter(dev, fdir_filter, queue, 1);
+}
 
-// /*
-//  * This is based on ixgbe_fdir_erase_perfect_filter_82599() in
-//  * ixgbe/ixgbe_82599.c. It is modified to take in the hash as a parameter so
-//  * that it can be used for removing signature and perfect filters.
-//  */
-// static s32
-// fdir_erase_filter_82599(struct ixgbe_hw *hw,
-// 	__notused union ixgbe_atr_input *input, uint32_t fdirhash)
-// {
-// 	u32 fdircmd = 0;
-// 	u32 retry_count;
-// 	s32 err = 0;
+/*
+ * This is based on ixgbe_fdir_erase_perfect_filter_82599() in
+ * ixgbe/ixgbe_82599.c. It is modified to take in the hash as a parameter so
+ * that it can be used for removing signature and perfect filters.
+ */
+static s32
+fdir_erase_filter_82599(struct ixgbe_hw *hw,
+	union ixgbe_atr_input *input, uint32_t fdirhash)
+{
+	u32 fdircmd = 0;
+	u32 retry_count;
+	s32 err = 0;
 
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
 
-// 	/* flush hash to HW */
-// 	IXGBE_WRITE_FLUSH(hw);
+	/* flush hash to HW */
+	IXGBE_WRITE_FLUSH(hw);
 
-// 	/* Query if filter is present */
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, IXGBE_FDIRCMD_CMD_QUERY_REM_FILT);
+	/* Query if filter is present */
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, IXGBE_FDIRCMD_CMD_QUERY_REM_FILT);
 
-// 	for (retry_count = 10; retry_count; retry_count--) {
-// 		/* allow 10us for query to process */
-// 		udelay(10);
-// 		/* verify query completed successfully */
-// 		fdircmd = IXGBE_READ_REG(hw, IXGBE_FDIRCMD);
-// 		if (!(fdircmd & IXGBE_FDIRCMD_CMD_MASK))
-// 			break;
-// 	}
+	for (retry_count = 10; retry_count; retry_count--) {
+		/* allow 10us for query to process */
+		udelay(10);
+		/* verify query completed successfully */
+		fdircmd = IXGBE_READ_REG(hw, IXGBE_FDIRCMD);
+		if (!(fdircmd & IXGBE_FDIRCMD_CMD_MASK))
+			break;
+	}
 
-// 	if (!retry_count) {
-// 		log_err("ixgbe: Timeout querying for flow director filter");
-// 		err = -EIO;
-// 	}
+	if (!retry_count) {
+		printk(KERN_ERR"ixgbe: Timeout querying for flow director filter");
+		err = -EIO;
+	}
 
-// 	/* if filter exists in hardware then remove it */
-// 	if (fdircmd & IXGBE_FDIRCMD_FILTER_VALID) {
-// 		IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
-// 		IXGBE_WRITE_FLUSH(hw);
-// 		IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD,
-// 				IXGBE_FDIRCMD_CMD_REMOVE_FLOW);
-// 	}
+	/* if filter exists in hardware then remove it */
+	if (fdircmd & IXGBE_FDIRCMD_FILTER_VALID) {
+		IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
+		IXGBE_WRITE_FLUSH(hw);
+		IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD,
+				IXGBE_FDIRCMD_CMD_REMOVE_FLOW);
+	}
 
-// 	return err;
-// }
+	return err;
+}
 
-// int
-// ixgbe_fdir_remove_signature_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter)
-// {
-// 	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-// 	union ixgbe_atr_input input;
-// 	int err;
+int
+ixgbe_fdir_remove_signature_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter)
+{
+	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	union ixgbe_atr_input input;
+	int err;
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return -ENOSYS;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return -ENOSYS;
 
-// 	err = fdir_filter_to_atr_input(fdir_filter, &input);
-// 	if (err)
-// 		return err;
+	err = fdir_filter_to_atr_input(fdir_filter, &input);
+	if (err)
+		return err;
 
-// 	return fdir_erase_filter_82599(hw, &input,
-// 			atr_compute_sig_hash_82599(&input,
-// 			dev->data->dev_conf.fdir_conf.pballoc));
-// }
+	return fdir_erase_filter_82599(hw, &input,
+			atr_compute_sig_hash_82599(&input,
+			dev->data->dev_conf.fdir_conf.pballoc));
+}
 
-// /**
-//  * Reverse the bits in FDIR registers that store 2 x 16 bit masks.
-//  *
-//  *  @hi_dword: Bits 31:16 mask to be bit swapped.
-//  *  @lo_dword: Bits 15:0  mask to be bit swapped.
-//  *
-//  *  Flow director uses several registers to store 2 x 16 bit masks with the
-//  *  bits reversed such as FDIRTCPM, FDIRUDPM and FDIRIP6M. The LS bit of the
-//  *  mask affects the MS bit/byte of the target. This function reverses the
-//  *  bits in these masks.
-//  *  **/
-// static uint32_t
-// reverse_fdir_bitmasks(uint16_t hi_dword, uint16_t lo_dword)
-// {
-// 	u32 mask = hi_dword << 16;
-// 	mask |= lo_dword;
-// 	mask = ((mask & 0x55555555) << 1) | ((mask & 0xAAAAAAAA) >> 1);
-// 	mask = ((mask & 0x33333333) << 2) | ((mask & 0xCCCCCCCC) >> 2);
-// 	mask = ((mask & 0x0F0F0F0F) << 4) | ((mask & 0xF0F0F0F0) >> 4);
-// 	return ((mask & 0x00FF00FF) << 8) | ((mask & 0xFF00FF00) >> 8);
-// }
+/**
+ * Reverse the bits in FDIR registers that store 2 x 16 bit masks.
+ *
+ *  @hi_dword: Bits 31:16 mask to be bit swapped.
+ *  @lo_dword: Bits 15:0  mask to be bit swapped.
+ *
+ *  Flow director uses several registers to store 2 x 16 bit masks with the
+ *  bits reversed such as FDIRTCPM, FDIRUDPM and FDIRIP6M. The LS bit of the
+ *  mask affects the MS bit/byte of the target. This function reverses the
+ *  bits in these masks.
+ *  **/
+static uint32_t
+reverse_fdir_bitmasks(uint16_t hi_dword, uint16_t lo_dword)
+{
+	u32 mask = hi_dword << 16;
+	mask |= lo_dword;
+	mask = ((mask & 0x55555555) << 1) | ((mask & 0xAAAAAAAA) >> 1);
+	mask = ((mask & 0x33333333) << 2) | ((mask & 0xCCCCCCCC) >> 2);
+	mask = ((mask & 0x0F0F0F0F) << 4) | ((mask & 0xF0F0F0F0) >> 4);
+	return ((mask & 0x00FF00FF) << 8) | ((mask & 0xFF00FF00) >> 8);
+}
 
-// /*
-//  * This macro exists in ixgbe/ixgbe_82599.c, however in that file it reverses
-//  * the bytes, and then reverses them again. So here it does nothing.
-//  */
-// #define IXGBE_WRITE_REG_BE32 IXGBE_WRITE_REG
+/*
+ * This macro exists in ixgbe/ixgbe_82599.c, however in that file it reverses
+ * the bytes, and then reverses them again. So here it does nothing.
+ */
+#define IXGBE_WRITE_REG_BE32 IXGBE_WRITE_REG
 
-// /*
-//  * This is based on ixgbe_fdir_set_input_mask_82599() in ixgbe/ixgbe_82599.c,
-//  * but makes use of the rte_fdir_masks structure to see which bits to set.
-//  */
-// static int
-// fdir_set_input_mask_82599(struct ixgbe_hw *hw,
-// 		struct rte_fdir_masks *input_mask)
-// {
-// 	/* mask VM pool since it is currently not supported */
-// 	u32 fdirm = IXGBE_FDIRM_POOL;
-// 	u32 fdirtcpm;  /* TCP source and destination port masks. */
-// 	u32 fdiripv6m; /* IPv6 source and destination masks. */
+/*
+ * This is based on ixgbe_fdir_set_input_mask_82599() in ixgbe/ixgbe_82599.c,
+ * but makes use of the rte_fdir_masks structure to see which bits to set.
+ */
+static int
+fdir_set_input_mask_82599(struct ixgbe_hw *hw,
+		struct rte_fdir_masks *input_mask)
+{
+	/* mask VM pool since it is currently not supported */
+	u32 fdirm = IXGBE_FDIRM_POOL;
+	u32 fdirtcpm;  /* TCP source and destination port masks. */
+	u32 fdiripv6m; /* IPv6 source and destination masks. */
 
 	
-// 	 * Program the relevant mask registers.  If src/dst_port or src/dst_addr
-// 	 * are zero, then assume a full mask for that field. Also assume that
-// 	 * a VLAN of 0 is unspecified, so mask that out as well.  L4type
-// 	 * cannot be masked out in this implementation.
+	/* Program the relevant mask registers.  If src/dst_port or src/dst_addr
+	 * are zero, then assume a full mask for that field. Also assume that
+	 * a VLAN of 0 is unspecified, so mask that out as well.  L4type
+	 * cannot be masked out in this implementation.*/
 	 
-// 	if (input_mask->only_ip_flow) {
-// 		/* use the L4 protocol mask for raw IPv4/IPv6 traffic */
-// 		fdirm |= IXGBE_FDIRM_L4P;
-// 		if (input_mask->dst_port_mask || input_mask->src_port_mask) {
-// 			log_err("ixgbe: Error on src/dst port mask\n");
-// 			return -EINVAL;
-// 		}
-// 	}
+	if (input_mask->only_ip_flow) {
+		/* use the L4 protocol mask for raw IPv4/IPv6 traffic */
+		fdirm |= IXGBE_FDIRM_L4P;
+		if (input_mask->dst_port_mask || input_mask->src_port_mask) {
+			printk(KERN_ERR"ixgbe: Error on src/dst port mask\n");
+			return -EINVAL;
+		}
+	}
 
-// 	if (!input_mask->comp_ipv6_dst)
-// 		/* mask DIPV6 */
-// 		fdirm |= IXGBE_FDIRM_DIPv6;
+	if (!input_mask->comp_ipv6_dst)
+		/* mask DIPV6 */
+		fdirm |= IXGBE_FDIRM_DIPv6;
 
-// 	if (!input_mask->vlan_id)
-// 		/* mask VLAN ID*/
-// 		fdirm |= IXGBE_FDIRM_VLANID;
+	if (!input_mask->vlan_id)
+		/* mask VLAN ID*/
+		fdirm |= IXGBE_FDIRM_VLANID;
 
-// 	if (!input_mask->vlan_prio)
-// 		/* mask VLAN priority */
-// 		fdirm |= IXGBE_FDIRM_VLANP;
+	if (!input_mask->vlan_prio)
+		/* mask VLAN priority */
+		fdirm |= IXGBE_FDIRM_VLANP;
 
-// 	if (!input_mask->flexbytes)
-// 		/* Mask Flex Bytes */
-// 		fdirm |= IXGBE_FDIRM_FLEX;
+	if (!input_mask->flexbytes)
+		/* Mask Flex Bytes */
+		fdirm |= IXGBE_FDIRM_FLEX;
 
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRM, fdirm);
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRM, fdirm);
 
-// 	/* store the TCP/UDP port masks, bit reversed from port layout */
-// 	fdirtcpm = reverse_fdir_bitmasks(input_mask->dst_port_mask,
-// 	                                 input_mask->src_port_mask);
+	/* store the TCP/UDP port masks, bit reversed from port layout */
+	fdirtcpm = reverse_fdir_bitmasks(input_mask->dst_port_mask,
+	                                 input_mask->src_port_mask);
 
-// 	/* write both the same so that UDP and TCP use the same mask */
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRTCPM, ~fdirtcpm);
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRUDPM, ~fdirtcpm);
+	/* write both the same so that UDP and TCP use the same mask */
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRTCPM, ~fdirtcpm);
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRUDPM, ~fdirtcpm);
 
-// 	if (!input_mask->set_ipv6_mask) {
-// 		/* Store source and destination IPv4 masks (big-endian) */
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIP4M,
-// 				IXGBE_NTOHL(~input_mask->src_ipv4_mask));
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRDIP4M,
-// 				IXGBE_NTOHL(~input_mask->dst_ipv4_mask));
-// 	}
-// 	else {
-// 		/* Store source and destination IPv6 masks (bit reversed) */
-// 		fdiripv6m = reverse_fdir_bitmasks(input_mask->dst_ipv6_mask,
-// 		                                  input_mask->src_ipv6_mask);
+	if (!input_mask->set_ipv6_mask) {
+		/* Store source and destination IPv4 masks (big-endian) */
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIP4M,
+				ntohl(~input_mask->src_ipv4_mask));
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRDIP4M,
+				ntohl(~input_mask->dst_ipv4_mask));
+	}
+	else {
+		/* Store source and destination IPv6 masks (bit reversed) */
+		fdiripv6m = reverse_fdir_bitmasks(input_mask->dst_ipv6_mask,
+		                                  input_mask->src_ipv6_mask);
 
-// 		IXGBE_WRITE_REG(hw, IXGBE_FDIRIP6M, ~fdiripv6m);
-// 	}
+		IXGBE_WRITE_REG(hw, IXGBE_FDIRIP6M, ~fdiripv6m);
+	}
 
-// 	return IXGBE_SUCCESS;
-// }
+	return IXGBE_SUCCESS;
+}
 
-// int
-// ixgbe_fdir_set_masks(struct rte_eth_dev *dev, struct rte_fdir_masks *fdir_masks)
-// {
-// 	struct ixgbe_hw *hw;
-// 	int err;
+int
+ixgbe_fdir_set_masks(struct rte_eth_dev *dev, struct rte_fdir_masks *fdir_masks)
+{
+	struct ixgbe_hw *hw;
+	int err;
 
-// 	hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return -ENOSYS;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return -ENOSYS;
 
-// 	err = ixgbe_reinit_fdir_tables_82599(hw);
-// 	if (err) {
-// 		log_err("ixgbe: reinit of fdir tables failed");
-// 		return -EIO;
-// 	}
+	err = ixgbe_reinit_fdir_tables_82599(hw);
+	if (err) {
+		printk(KERN_ERR "ixgbe: reinit of fdir tables failed");
+		return -EIO;
+	}
 
-// 	return fdir_set_input_mask_82599(hw, fdir_masks);
-// }
+	return fdir_set_input_mask_82599(hw, fdir_masks);
+}
 
-// static uint32_t
-// atr_compute_perfect_hash_82599(union ixgbe_atr_input *input,
-// 		enum rte_fdir_pballoc_type pballoc)
-// {
-// 	if (pballoc == RTE_FDIR_PBALLOC_256K)
-// 		return ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				PERFECT_BUCKET_256KB_HASH_MASK;
-// 	else if (pballoc == RTE_FDIR_PBALLOC_128K)
-// 		return ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				PERFECT_BUCKET_128KB_HASH_MASK;
-// 	else
-// 		return ixgbe_atr_compute_hash_82599(input,
-// 				IXGBE_ATR_BUCKET_HASH_KEY) &
-// 				PERFECT_BUCKET_64KB_HASH_MASK;
-// }
+static uint32_t
+atr_compute_perfect_hash_82599(union ixgbe_atr_input *input,
+		enum rte_fdir_pballoc_type pballoc)
+{
+	if (pballoc == RTE_FDIR_PBALLOC_256K)
+		return ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				PERFECT_BUCKET_256KB_HASH_MASK;
+	else if (pballoc == RTE_FDIR_PBALLOC_128K)
+		return ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				PERFECT_BUCKET_128KB_HASH_MASK;
+	else
+		return ixgbe_atr_compute_hash_82599(input,
+				IXGBE_ATR_BUCKET_HASH_KEY) &
+				PERFECT_BUCKET_64KB_HASH_MASK;
+}
 
-// /*
-//  * This is based on ixgbe_fdir_write_perfect_filter_82599() in
-//  * ixgbe/ixgbe_82599.c, with the ability to set extra flags in FDIRCMD register
-//  * added, and IPv6 support also added. The hash value is also pre-calculated
-//  * as the pballoc value is needed to do it.
-//  */
-// static void
-// fdir_write_perfect_filter_82599(struct ixgbe_hw *hw, union ixgbe_atr_input *input,
-// 		uint16_t soft_id, uint8_t queue, uint32_t fdircmd,
-// 		uint32_t fdirhash)
-// {
-// 	u32 fdirport, fdirvlan;
+/*
+ * This is based on ixgbe_fdir_write_perfect_filter_82599() in
+ * ixgbe/ixgbe_82599.c, with the ability to set extra flags in FDIRCMD register
+ * added, and IPv6 support also added. The hash value is also pre-calculated
+ * as the pballoc value is needed to do it.
+ */
+static void
+fdir_write_perfect_filter_82599(struct ixgbe_hw *hw, union ixgbe_atr_input *input,
+		uint16_t soft_id, uint8_t queue, uint32_t fdircmd,
+		uint32_t fdirhash)
+{
+	u32 fdirport, fdirvlan;
 
-// 	/* record the source address (big-endian) */
-// 	if (input->formatted.flow_type & IXGBE_ATR_L4TYPE_IPV6_MASK) {
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(0), input->formatted.src_ip[0]);
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(1), input->formatted.src_ip[1]);
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(2), input->formatted.src_ip[2]);
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPSA, input->formatted.src_ip[3]);
-// 	}
-// 	else {
-// 		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPSA, input->formatted.src_ip[0]);
-// 	}
+	/* record the source address (big-endian) */
+	if (input->formatted.flow_type & IXGBE_ATR_L4TYPE_IPV6_MASK) {
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(0), input->formatted.src_ip[0]);
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(1), input->formatted.src_ip[1]);
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(2), input->formatted.src_ip[2]);
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPSA, input->formatted.src_ip[3]);
+	}
+	else {
+		IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPSA, input->formatted.src_ip[0]);
+	}
 
-// 	/* record the first 32 bits of the destination address (big-endian) */
-// 	IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPDA, input->formatted.dst_ip[0]);
+	/* record the first 32 bits of the destination address (big-endian) */
+	IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRIPDA, input->formatted.dst_ip[0]);
 
-// 	/* record source and destination port (little-endian)*/
-// 	fdirport = IXGBE_NTOHS(input->formatted.dst_port);
-// 	fdirport <<= IXGBE_FDIRPORT_DESTINATION_SHIFT;
-// 	fdirport |= IXGBE_NTOHS(input->formatted.src_port);
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRPORT, fdirport);
+	/* record source and destination port (little-endian)*/
+	fdirport = ntohs(input->formatted.dst_port);
+	fdirport <<= IXGBE_FDIRPORT_DESTINATION_SHIFT;
+	fdirport |= ntohs(input->formatted.src_port);
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRPORT, fdirport);
 
-// 	/* record vlan (little-endian) and flex_bytes(big-endian) */
-// 	fdirvlan = input->formatted.flex_bytes;
-// 	fdirvlan <<= IXGBE_FDIRVLAN_FLEX_SHIFT;
-// 	fdirvlan |= IXGBE_NTOHS(input->formatted.vlan_id);
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRVLAN, fdirvlan);
+	/* record vlan (little-endian) and flex_bytes(big-endian) */
+	fdirvlan = input->formatted.flex_bytes;
+	fdirvlan <<= IXGBE_FDIRVLAN_FLEX_SHIFT;
+	fdirvlan |= ntohs(input->formatted.vlan_id);
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRVLAN, fdirvlan);
 
-// 	/* configure FDIRHASH register */
-// 	fdirhash |= soft_id << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT;
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
+	/* configure FDIRHASH register */
+	fdirhash |= soft_id << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT;
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
 
-// 	/*
-// 	 * flush all previous writes to make certain registers are
-// 	 * programmed prior to issuing the command
-// 	 */
-// 	IXGBE_WRITE_FLUSH(hw);
+	/*
+	 * flush all previous writes to make certain registers are
+	 * programmed prior to issuing the command
+	 */
+	IXGBE_WRITE_FLUSH(hw);
 
-// 	/* configure FDIRCMD register */
-// 	fdircmd |= IXGBE_FDIRCMD_CMD_ADD_FLOW |
-// 		  IXGBE_FDIRCMD_LAST | IXGBE_FDIRCMD_QUEUE_EN;
-// 	fdircmd |= input->formatted.flow_type << IXGBE_FDIRCMD_FLOW_TYPE_SHIFT;
-// 	fdircmd |= (u32)queue << IXGBE_FDIRCMD_RX_QUEUE_SHIFT;
-// 	fdircmd |= (u32)input->formatted.vm_pool << IXGBE_FDIRCMD_VT_POOL_SHIFT;
+	/* configure FDIRCMD register */
+	fdircmd |= IXGBE_FDIRCMD_CMD_ADD_FLOW |
+		  IXGBE_FDIRCMD_LAST | IXGBE_FDIRCMD_QUEUE_EN;
+	fdircmd |= input->formatted.flow_type << IXGBE_FDIRCMD_FLOW_TYPE_SHIFT;
+	fdircmd |= (u32)queue << IXGBE_FDIRCMD_RX_QUEUE_SHIFT;
+	fdircmd |= (u32)input->formatted.vm_pool << IXGBE_FDIRCMD_VT_POOL_SHIFT;
 
-// 	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, fdircmd);
-// }
+	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, fdircmd);
+}
 
-// /*
-//  * Adds or updates a perfect filter.
-//  *
-//  * dev: ethernet device to add filter to
-//  * fdir_filter: filter details
-//  * soft_id: software index for the filters
-//  * queue: queue index to direct traffic to
-//  * drop: non-zero if packets should be sent to the drop queue
-//  * update: 0 to add a new filter, otherwise update existing.
-//  */
-// static int
-// fdir_add_update_perfect_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
-// 		uint8_t queue, int drop, int update)
-// {
-// 	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-// 	uint32_t fdircmd_flags = (update) ? IXGBE_FDIRCMD_FILTER_UPDATE : 0;
-// 	uint32_t fdirhash;
-// 	union ixgbe_atr_input input;
-// 	int err;
+/*
+ * Adds or updates a perfect filter.
+ *
+ * dev: ethernet device to add filter to
+ * fdir_filter: filter details
+ * soft_id: software index for the filters
+ * queue: queue index to direct traffic to
+ * drop: non-zero if packets should be sent to the drop queue
+ * update: 0 to add a new filter, otherwise update existing.
+ */
+static int
+fdir_add_update_perfect_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
+		uint8_t queue, int drop, int update)
+{
+	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	uint32_t fdircmd_flags = (update) ? IXGBE_FDIRCMD_FILTER_UPDATE : 0;
+	uint32_t fdirhash;
+	union ixgbe_atr_input input;
+	int err;
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return -ENOSYS;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return -ENOSYS;
 
-// 	err = fdir_filter_to_atr_input(fdir_filter, &input);
-// 	if (err)
-// 		return err;
+	err = fdir_filter_to_atr_input(fdir_filter, &input);
+	if (err)
+		return err;
 
-// 	if (drop) {
-// 		queue = dev->data->dev_conf.fdir_conf.drop_queue;
-// 		fdircmd_flags |= IXGBE_FDIRCMD_DROP;
-// 	}
+	if (drop) {
+		queue = dev->data->dev_conf.fdir_conf.drop_queue;
+		fdircmd_flags |= IXGBE_FDIRCMD_DROP;
+	}
 
-// 	fdirhash = atr_compute_perfect_hash_82599(&input,
-// 			dev->data->dev_conf.fdir_conf.pballoc);
+	fdirhash = atr_compute_perfect_hash_82599(&input,
+			dev->data->dev_conf.fdir_conf.pballoc);
 
-// 	fdir_write_perfect_filter_82599(hw, &input, soft_id, queue,
-// 			fdircmd_flags, fdirhash);
-// 	return 0;
-// }
+	fdir_write_perfect_filter_82599(hw, &input, soft_id, queue,
+			fdircmd_flags, fdirhash);
+	return 0;
+}
 
-// int
-// ixgbe_fdir_add_perfect_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
-// 		uint8_t queue, uint8_t drop)
-// {
-// 	return fdir_add_update_perfect_filter(dev, fdir_filter, soft_id, queue,
-// 			drop, 0);
-// }
+int
+ixgbe_fdir_add_perfect_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
+		uint8_t queue, uint8_t drop)
+{
+	return fdir_add_update_perfect_filter(dev, fdir_filter, soft_id, queue,
+			drop, 0);
+}
 
-// int
-// ixgbe_fdir_update_perfect_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
-// 		uint8_t queue, uint8_t drop)
-// {
-// 	return fdir_add_update_perfect_filter(dev, fdir_filter, soft_id, queue,
-// 			drop, 1);
-// }
+int
+ixgbe_fdir_update_perfect_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter, uint16_t soft_id,
+		uint8_t queue, uint8_t drop)
+{
+	return fdir_add_update_perfect_filter(dev, fdir_filter, soft_id, queue,
+			drop, 1);
+}
 
-// int
-// ixgbe_fdir_remove_perfect_filter(struct rte_eth_dev *dev,
-// 		struct rte_fdir_filter *fdir_filter,
-// 		uint16_t soft_id)
-// {
-// 	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-// 	union ixgbe_atr_input input;
-// 	uint32_t fdirhash;
-// 	int err;
+int
+ixgbe_fdir_remove_perfect_filter(struct rte_eth_dev *dev,
+		struct rte_fdir_filter *fdir_filter,
+		uint16_t soft_id)
+{
+	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	union ixgbe_atr_input input;
+	uint32_t fdirhash;
+	int err;
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return -ENOSYS;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return -ENOSYS;
 
-// 	err = fdir_filter_to_atr_input(fdir_filter, &input);
-// 	if (err)
-// 		return err;
+	err = fdir_filter_to_atr_input(fdir_filter, &input);
+	if (err)
+		return err;
 
-// 	/* configure FDIRHASH register */
-// 	fdirhash = atr_compute_perfect_hash_82599(&input,
-// 			dev->data->dev_conf.fdir_conf.pballoc);
-// 	fdirhash |= soft_id << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT;
+	/* configure FDIRHASH register */
+	fdirhash = atr_compute_perfect_hash_82599(&input,
+			dev->data->dev_conf.fdir_conf.pballoc);
+	fdirhash |= soft_id << IXGBE_FDIRHASH_SIG_SW_INDEX_SHIFT;
 
-// 	return fdir_erase_filter_82599(hw, &input, fdirhash);
-// }
+	return fdir_erase_filter_82599(hw, &input, fdirhash);
+}
 
-// void
-// ixgbe_fdir_info_get(struct rte_eth_dev *dev, struct rte_eth_fdir *fdir)
-// {
-// 	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
-// 	struct ixgbe_hw_fdir_info *info =
-// 			IXGBE_DEV_PRIVATE_TO_FDIR_INFO(dev->data->dev_private);
-// 	uint32_t reg;
+void
+ixgbe_fdir_info_get(struct rte_eth_dev *dev, struct rte_eth_fdir *fdir)
+{
+	struct ixgbe_hw *hw = IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
+	struct ixgbe_hw_fdir_info *info =
+			IXGBE_DEV_PRIVATE_TO_FDIR_INFO(dev->data->dev_private);
+	uint32_t reg;
 
-// 	if (hw->mac.type != ixgbe_mac_82599EB)
-// 		return;
+	if (hw->mac.type != ixgbe_mac_82599EB)
+		return;
 
-// 	/* Get the information from registers */
-// 	reg = IXGBE_READ_REG(hw, IXGBE_FDIRFREE);
-// 	info->collision = (uint16_t)((reg & IXGBE_FDIRFREE_COLL_MASK) >>
-// 					IXGBE_FDIRFREE_COLL_SHIFT);
-// 	info->free = (uint16_t)((reg & IXGBE_FDIRFREE_FREE_MASK) >>
-// 				   IXGBE_FDIRFREE_FREE_SHIFT);
+	/* Get the information from registers */
+	reg = IXGBE_READ_REG(hw, IXGBE_FDIRFREE);
+	info->collision = (uint16_t)((reg & IXGBE_FDIRFREE_COLL_MASK) >>
+					IXGBE_FDIRFREE_COLL_SHIFT);
+	info->free = (uint16_t)((reg & IXGBE_FDIRFREE_FREE_MASK) >>
+				   IXGBE_FDIRFREE_FREE_SHIFT);
 
-// 	reg = IXGBE_READ_REG(hw, IXGBE_FDIRLEN);
-// 	info->maxhash = (uint16_t)((reg & IXGBE_FDIRLEN_MAXHASH_MASK) >>
-// 				      IXGBE_FDIRLEN_MAXHASH_SHIFT);
-// 	info->maxlen  = (uint8_t)((reg & IXGBE_FDIRLEN_MAXLEN_MASK) >>
-// 				     IXGBE_FDIRLEN_MAXLEN_SHIFT);
+	reg = IXGBE_READ_REG(hw, IXGBE_FDIRLEN);
+	info->maxhash = (uint16_t)((reg & IXGBE_FDIRLEN_MAXHASH_MASK) >>
+				      IXGBE_FDIRLEN_MAXHASH_SHIFT);
+	info->maxlen  = (uint8_t)((reg & IXGBE_FDIRLEN_MAXLEN_MASK) >>
+				     IXGBE_FDIRLEN_MAXLEN_SHIFT);
 
-// 	reg = IXGBE_READ_REG(hw, IXGBE_FDIRUSTAT);
-// 	info->remove += (reg & IXGBE_FDIRUSTAT_REMOVE_MASK) >>
-// 		IXGBE_FDIRUSTAT_REMOVE_SHIFT;
-// 	info->add += (reg & IXGBE_FDIRUSTAT_ADD_MASK) >>
-// 		IXGBE_FDIRUSTAT_ADD_SHIFT;
+	reg = IXGBE_READ_REG(hw, IXGBE_FDIRUSTAT);
+	info->remove += (reg & IXGBE_FDIRUSTAT_REMOVE_MASK) >>
+		IXGBE_FDIRUSTAT_REMOVE_SHIFT;
+	info->add += (reg & IXGBE_FDIRUSTAT_ADD_MASK) >>
+		IXGBE_FDIRUSTAT_ADD_SHIFT;
 
-// 	reg = IXGBE_READ_REG(hw, IXGBE_FDIRFSTAT) & 0xFFFF;
-// 	info->f_remove += (reg & IXGBE_FDIRFSTAT_FREMOVE_MASK) >>
-// 		IXGBE_FDIRFSTAT_FREMOVE_SHIFT;
-// 	info->f_add += (reg & IXGBE_FDIRFSTAT_FADD_MASK) >>
-// 		IXGBE_FDIRFSTAT_FADD_SHIFT;
+	reg = IXGBE_READ_REG(hw, IXGBE_FDIRFSTAT) & 0xFFFF;
+	info->f_remove += (reg & IXGBE_FDIRFSTAT_FREMOVE_MASK) >>
+		IXGBE_FDIRFSTAT_FREMOVE_SHIFT;
+	info->f_add += (reg & IXGBE_FDIRFSTAT_FADD_MASK) >>
+		IXGBE_FDIRFSTAT_FADD_SHIFT;
 
-// 	/*  Copy the new information in the fdir parameter */
-// 	fdir->collision = info->collision;
-// 	fdir->free = info->free;
-// 	fdir->maxhash = info->maxhash;
-// 	fdir->maxlen = info->maxlen;
-// 	fdir->remove = info->remove;
-// 	fdir->add = info->add;
-// 	fdir->f_remove = info->f_remove;
-// 	fdir->f_add = info->f_add;
-// }
+	/*  Copy the new information in the fdir parameter */
+	fdir->collision = info->collision;
+	fdir->free = info->free;
+	fdir->maxhash = info->maxhash;
+	fdir->maxlen = info->maxlen;
+	fdir->remove = info->remove;
+	fdir->add = info->add;
+	fdir->f_remove = info->f_remove;
+	fdir->f_add = info->f_add;
+}
