@@ -2370,5 +2370,7 @@ reset_pipeline_out:
 	return ret_val;
 }
 
-
-
+const struct ixgbe_info ixgbe_82599_info = {
+	.mac                    = ixgbe_mac_82599EB,
+	.mvals			= ixgbe_mvals_8259X,
+};

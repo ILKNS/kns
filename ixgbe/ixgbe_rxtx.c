@@ -236,18 +236,18 @@ static void ixgbe_clear_rx_queue(struct rx_queue *rxq)
 // 	return false;
 // }
 
-// /**
-//  * ixgbe_dev_rx_queue_setup - prepares an RX queue
-//  * @dev: the ethernet device
-//  * @queue_idx: the queue number
-//  * @numa_node: the desired NUMA affinity, or -1 for no preference
-//  * @nb_desc: the number of descriptors to create for the ring
-//  *
-//  * Returns 0 if successful, otherwise failure.
-//  */
-// int ixgbe_dev_rx_queue_setup(struct rte_eth_dev *dev, int queue_idx,
-// 			     int numa_node, uint16_t nb_desc)
-// {
+/**
+ * ixgbe_dev_rx_queue_setup - prepares an RX queue
+ * @dev: the ethernet device
+ * @queue_idx: the queue number
+ * @numa_node: the desired NUMA affinity, or -1 for no preference
+ * @nb_desc: the number of descriptors to create for the ring
+ *
+ * Returns 0 if successful, otherwise failure.
+ */
+int ixgbe_dev_rx_queue_setup(struct rte_eth_dev *dev, int queue_idx,
+			     int numa_node, uint16_t nb_desc)
+{
 // 	struct ixgbe_hw *hw;
 // 	void *page;
 // 	machaddr_t page_phys;
@@ -326,12 +326,12 @@ static void ixgbe_clear_rx_queue(struct rx_queue *rxq)
 // 		goto err;
 
 // 	dev->data->rx_queues[queue_idx] = &rxq->erxq;
-// 	return 0;
+	return 0;
 
 // err:
 // 	mem_free_page(page, PGSIZE_2MB);
 // 	return ret;
-// }
+}
 
 static int ixgbe_tx_reclaim(struct eth_tx_queue *tx)
 {
@@ -510,17 +510,17 @@ static int ixgbe_tx_xmit_ctx(struct tx_queue *txq, int ol_flags, int ctx_idx)
 // 	return nb_pkts;
 // }
 
-// /**
-//  * ixgbe_dev_rx_queue_release - frees an RX queue
-//  * @rxq: the RX queue to free
-//  */
-// void ixgbe_dev_rx_queue_release(struct eth_rx_queue *erxq)
-// {
+/**
+ * ixgbe_dev_rx_queue_release - frees an RX queue
+ * @rxq: the RX queue to free
+ */
+void ixgbe_dev_rx_queue_release(struct eth_rx_queue *erxq)
+{
 // 	struct rx_queue *rxq = eth_rx_queue_to_drv(erxq);
 
 // 	ixgbe_clear_rx_queue(rxq);
 // 	mem_free_page((void *) rxq, PGSIZE_2MB);
-// }
+}
 
 static void ixgbe_reset_tx_queue(struct tx_queue *txq)
 {
@@ -535,19 +535,19 @@ static void ixgbe_reset_tx_queue(struct tx_queue *txq)
 
 }
 
-// /**
-//  * ixgbe_dev_tx_queue_setup - prepares an RX queue
-//  * @dev: the ethernet device
-//  * @queue_idx: the queue number
-//  * @numa_node: the desired NUMA affinity, or -1 for no preference
-//  * @nb_desc: the number of descriptors to create for the ring
-//  *
-//  * Returns 0 if successful, otherwise failure.
-//  */
+/**
+ * ixgbe_dev_tx_queue_setup - prepares an RX queue
+ * @dev: the ethernet device
+ * @queue_idx: the queue number
+ * @numa_node: the desired NUMA affinity, or -1 for no preference
+ * @nb_desc: the number of descriptors to create for the ring
+ *
+ * Returns 0 if successful, otherwise failure.
+ */
 
-// int ixgbe_dev_tx_queue_setup(struct rte_eth_dev *dev, int queue_idx,
-// 			     int numa_node, uint16_t nb_desc)
-// {
+int ixgbe_dev_tx_queue_setup(struct rte_eth_dev *dev, int queue_idx,
+			     int numa_node, uint16_t nb_desc)
+{
 // 	struct tx_queue *txq;
 // 	struct ixgbe_hw *hw;
 // 	void *page;
@@ -618,23 +618,23 @@ static void ixgbe_reset_tx_queue(struct tx_queue *txq)
 
 // 	ixgbe_reset_tx_queue(txq);
 // 	dev->data->tx_queues[queue_idx] = &txq->etxq;
-// 	return 0;
+	return 0;
 
 // err:
 // 	mem_free_page(page, PGSIZE_2MB);
 // 	return ret;
-// }
+}
 
-// /**
-//  * ixgbe_dev_tx_queue_release - frees a TX queue
-//  * @rxq: the RX queue to free
-//  */
-// void ixgbe_dev_tx_queue_release(struct eth_tx_queue *etxq)
-// {
+/**
+ * ixgbe_dev_tx_queue_release - frees a TX queue
+ * @rxq: the RX queue to free
+ */
+void ixgbe_dev_tx_queue_release(struct eth_tx_queue *etxq)
+{
 // 	struct tx_queue *txq = eth_tx_queue_to_drv(etxq);
 
 // 	mem_free_page((void *) txq, PGSIZE_2MB);
-// }
+}
 
 
 /**

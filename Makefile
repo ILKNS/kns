@@ -3,19 +3,22 @@ CONFIG_MODULE_SIG=n
 ifneq ($(KERNELRELEASE),)
 	subdir-ccflags-y += -I$(PWD)/inc
 	SRC  := $(subst $(PWD)/,,$(shell find $(PWD) -name "*.c"))
-	OBJS  := $(subst .c,.o,$(SRC))
+	OBJS-1  := $(subst .c,.o,$(SRC))
+	OBJS  := $(filter-out user/hugepage_user.o, $(OBJS-1))
 	obj-y			:=  ixgbe/ core/
-	obj-m 			+=  kix.o
-	kix-objs		:=  init.o $(OBJS)
+	obj-m 			+=  kns.o
+	kns-objs		:=  init.o $(OBJS)
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 	PWD  :=		$(shell pwd)
-
-all: module
 .PHONY: all
+all: module hgpage
 
 module:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+
+hgpage: user/hugepage_user.c
+	cc user/hugepage_user.c -o user/hugepage_user.o -I$(PWD)/inc
 
 endif
 

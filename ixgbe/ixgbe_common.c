@@ -58,6 +58,11 @@ static s32 ixgbe_write_eeprom_buffer_bit_bang(struct ixgbe_hw *hw, u16 offset,
 static s32 ixgbe_detect_eeprom_page_size_generic(struct ixgbe_hw *hw,
 						 u16 offset);
 
+/* Base table for registers values that change by MAC */
+const u32 ixgbe_mvals_8259X[IXGBE_MVALS_IDX_LIMIT] = {
+	IXGBE_MVALS_INIT(8259X)
+};
+
 /**
  *  ixgbe_init_ops_generic - Inits function ptrs
  *  @hw: pointer to the hardware structure

@@ -188,3 +188,5 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
 void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
 
 extern s32 ixgbe_reset_pipeline_82599(struct ixgbe_hw *hw);
+
+extern const u32 ixgbe_mvals_8259X[IXGBE_MVALS_IDX_LIMIT];
