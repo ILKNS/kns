@@ -8,5 +8,6 @@ Try passing GFP_KERNEL to __get_free_pages(), with the large contiguous number.
 
 ## notes
 - 2MB temperarily for 4096 per node
-- ban transparent huge page
+- disable transparent huge page(maybe i need to modify it if thp is performed better)
 - there's api in mmap to allocate hugepage
+- hugepage is non swappable in kernel, thus we don't need hugepage actually?
