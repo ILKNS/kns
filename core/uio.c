@@ -5,22 +5,22 @@
 #include <linux/module.h>
 
 #include <kns/ioctl.h>
+#include <kns/mem.h>
 
 void* mem_start = NULL;
+void* mem_phy_base = NULL;
 static dev_t dev;
 static struct cdev c_dev;
 static struct class *uio_cls = NULL;
 
 static long uio_ioctl(struct file *File, unsigned int cmd, unsigned long args){
-	void* kmem_addr;
-
 	switch(cmd){
 		case PASSING_MEM_ADDR:
 			if(copy_from_user(&mem_start, (int*)args, sizeof(unsigned long)))
 				return -EACCES;
 			printk(KERN_DEBUG "ADDR received: %p", mem_start);
-			kmem_addr = mmap_hp_u2k(mem_start);
-			printk(KERN_DEBUG "ADDR mapped to kernel: %p", kmem_addr);
+			mem_phy_base = mmap_hp_u2k(mem_start);
+			printk(KERN_DEBUG "ADDR mapped to kernel: %p", mem_phy_base);
 			break;
 		default:
 			return -EINVAL;
