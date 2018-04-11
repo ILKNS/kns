@@ -60,4 +60,9 @@ enum {
 #define MEM_USER_IOMAPK_BASE_ADDR	0x100000000000 /* batched system calls and network mbuf's */
 #define MEM_USER_IOMAPK_END_ADDR	0x101000000000 /* end of batched system calls and network mbuf's */
 
+/* defined in numaif, declare here to provide interface for later impl */
+struct bitmask{
+
+};
+
 void* mmap_hp_u2k(void* memaddr);

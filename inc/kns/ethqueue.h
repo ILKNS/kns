@@ -40,49 +40,49 @@ struct eth_rx_queue {
 	struct rte_eth_dev *dev;
 };
 
-// /**
-//  * eth_rx_poll - recieve pending packets on an RX queue
-//  * @rx: the RX queue
-//  *
-//  * Returns the number of packets recieved.
-//  */
-// static inline int eth_rx_poll(struct eth_rx_queue *rx)
-// {
-// 	return rx->poll(rx);
-// }
+/**
+ * eth_rx_poll - recieve pending packets on an RX queue
+ * @rx: the RX queue
+ *
+ * Returns the number of packets recieved.
+ */
+static inline int eth_rx_poll(struct eth_rx_queue *rx)
+{
+	return rx->poll(rx);
+}
 
-// /**
-//  * eth_recv - enqueues a received packet
-//  * @rxq: the receive queue
-//  * @mbuf: the packet
-//  *
-//  * Typically called by the device driver's poll() routine.
-//  *
-//  * Returns 0 if successful, otherwise the packet should be dropped.
-//  */
-// static inline int eth_recv(struct eth_rx_queue *rxq, struct mbuf *mbuf)
-// {
-// 	if (eth_recv_handle_fg_transition(rxq, mbuf))
-// 		return 0;
+/**
+ * eth_recv - enqueues a received packet
+ * @rxq: the receive queue
+ * @mbuf: the packet
+ *
+ * Typically called by the device driver's poll() routine.
+ *
+ * Returns 0 if successful, otherwise the packet should be dropped.
+ */
+static inline int eth_recv(struct eth_rx_queue *rxq, struct mbuf *mbuf)
+{
+	if (eth_recv_handle_fg_transition(rxq, mbuf))
+		return 0;
 
-// 	if (unlikely(rxq->len >= ETH_RX_MAX_DEPTH))
-// 		return -EBUSY;
+	if (unlikely(rxq->len >= ETH_RX_MAX_DEPTH))
+		return -EBUSY;
 
-// 	mbuf->next = NULL;
+	mbuf->next = NULL;
 
-// 	if (!rxq->head) {
-// 		rxq->head = mbuf;
-// 		rxq->tail = mbuf;
-// 	} else {
-// 		rxq->tail->next = mbuf;
-// 		rxq->tail = mbuf;
-// 	}
+	if (!rxq->head) {
+		rxq->head = mbuf;
+		rxq->tail = mbuf;
+	} else {
+		rxq->tail->next = mbuf;
+		rxq->tail = mbuf;
+	}
 
-// 	rxq->len++;
-// 	return 0;
-// }
+	rxq->len++;
+	return 0;
+}
 
-// extern bool eth_rx_idle_wait(uint64_t max_usecs);
+extern bool eth_rx_idle_wait(uint64_t max_usecs);
 
 
 /*
@@ -98,83 +98,80 @@ struct eth_tx_queue {
 	int (*xmit) (struct eth_tx_queue *tx, int nr, struct mbuf **mbufs);
 };
 
-// /**
-//  * eth_tx_reclaim - scans the queue and reclaims finished buffers
-//  * @tx: the TX queue
-//  *
-//  * NOTE: scatter-gather mbuf's can span multiple descriptors, so
-//  * take that into account when interpreting the count provided by
-//  * this function.
-//  *
-//  * Returns an available descriptor count.
-//  */
-// static inline int eth_tx_reclaim(struct eth_tx_queue *tx)
-// {
-// 	return tx->reclaim(tx);
-// }
+/**
+ * eth_tx_reclaim - scans the queue and reclaims finished buffers
+ * @tx: the TX queue
+ *
+ * NOTE: scatter-gather mbuf's can span multiple descriptors, so
+ * take that into account when interpreting the count provided by
+ * this function.
+ *
+ * Returns an available descriptor count.
+ */
+static inline int eth_tx_reclaim(struct eth_tx_queue *tx)
+{
+	return tx->reclaim(tx);
+}
 
-// /**
-//  * eth_tx_xmit - transmits packets on a TX queue
-//  * @tx: the TX queue
-//  * @nr: the number of mbufs to transmit
-//  * @mbufs: an array of mbufs to process
-//  *
-//  * Returns the number of mbuf's transmitted.
-//  */
-// static inline int eth_tx_xmit(struct eth_tx_queue *tx,
-// 			      int nr, struct mbuf **mbufs)
-// {
-// #ifdef ENABLE_PCAP
-// 	int i;
+/**
+ * eth_tx_xmit - transmits packets on a TX queue
+ * @tx: the TX queue
+ * @nr: the number of mbufs to transmit
+ * @mbufs: an array of mbufs to process
+ *
+ * Returns the number of mbuf's transmitted.
+ */
+static inline int eth_tx_xmit(struct eth_tx_queue *tx,
+			      int nr, struct mbuf **mbufs)
+{
+#ifdef ENABLE_PCAP
+	int i;
 
-// 	for (i = 0; i < nr; i++)
-// 		pcap_write(mbufs[i]);
-// #endif
-// 	return tx->xmit(tx, nr, mbufs);
-// }
+	for (i = 0; i < nr; i++)
+		pcap_write(mbufs[i]);
+#endif
+	return tx->xmit(tx, nr, mbufs);
+}
 
-// /* FIXME: convert to per-flowgroup */
-// //DECLARE_PERQUEUE(struct eth_tx_queue *, eth_txq);
+/**
+ * eth_send - enqueues a packet to be sent
+ * @mbuf: the packet
+ *
+ * Returns 0 if successful, otherwise out of space.
+ */
+static inline int eth_send(struct eth_tx_queue *txq, struct mbuf *mbuf)
+{
+	int nr = 1 + mbuf->nr_iov;
+	if (unlikely(nr > txq->cap))
+		return -EBUSY;
 
-// /**
-//  * eth_send - enqueues a packet to be sent
-//  * @mbuf: the packet
-//  *
-//  * Returns 0 if successful, otherwise out of space.
-//  */
-// static inline int eth_send(struct eth_tx_queue *txq, struct mbuf *mbuf)
-// {
-// 	int nr = 1 + mbuf->nr_iov;
-// 	if (unlikely(nr > txq->cap))
-// 		return -EBUSY;
+	txq->bufs[txq->len++] = mbuf;
+	txq->cap -= nr;
 
-// 	txq->bufs[txq->len++] = mbuf;
-// 	txq->cap -= nr;
+	return 0;
+}
 
-// 	return 0;
-// }
+/**
+ * eth_send_one - enqueues a packet without scatter-gather to be sent
+ * @mbuf: the packet
+ * @len: the length of the packet
+ *
+ * Returns 0 if successful, otherwise out of space.
+ */
+static inline int eth_send_one(struct eth_tx_queue *txq, struct mbuf *mbuf, size_t len)
+{
+	mbuf->len = len;
+	mbuf->nr_iov = 0;
 
-// /**
-//  * eth_send_one - enqueues a packet without scatter-gather to be sent
-//  * @mbuf: the packet
-//  * @len: the length of the packet
-//  *
-//  * Returns 0 if successful, otherwise out of space.
-//  */
-// static inline int eth_send_one(struct eth_tx_queue *txq, struct mbuf *mbuf, size_t len)
-// {
-// 	mbuf->len = len;
-// 	mbuf->nr_iov = 0;
+	return eth_send(txq,mbuf);
+}
 
-// 	return eth_send(txq,mbuf);
-// }
+DECLARE_PER_CPU(int, eth_num_queues);
+DECLARE_PER_CPU(struct eth_rx_queue *, eth_rxqs[]);
+DECLARE_PER_CPU(struct eth_tx_queue *, eth_txqs[]);
 
-// DECLARE_PERCPU(int, eth_num_queues);
-// DECLARE_PERCPU(struct eth_rx_queue *, eth_rxqs[]);
-// DECLARE_PERCPU(struct eth_tx_queue *, eth_txqs[]);
-
-// extern int eth_process_poll(void);
-// extern int eth_process_recv(void);
-// extern void eth_process_send(void);
-// extern void eth_process_reclaim(void);
+extern int eth_process_poll(void);
+extern int eth_process_recv(void);
+extern void eth_process_send(void);
+extern void eth_process_reclaim(void);
 

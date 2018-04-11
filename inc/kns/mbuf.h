@@ -4,12 +4,10 @@
 
 #pragma once
 
-// #include <ix/stddef.h>
-// #include <ix/mem.h>
-// #include <ix/mempool.h>
-// #include <ix/cpu.h>
-// #include <ix/page.h>
-// #include <ix/syscall.h>
+#include <kns/mem.h>
+#include <kns/mempool.h>
+#include <kns/page.h>
+#include <kns/sg.h>
 
 struct mbuf_iov {
 	void *base;
@@ -24,29 +22,29 @@ struct mbuf_iov {
  *
  * Returns the length of the mbuf IOV (could be less than the sg entry).
  */
-// static inline size_t
-// mbuf_iov_create(struct mbuf_iov *iov, struct sg_entry *ent)
-// {
-// 	size_t len = min(ent->len, PGSIZE_2MB - PGOFF_2MB(ent->base));
+static inline size_t
+mbuf_iov_create(struct mbuf_iov *iov, struct sg_entry *ent)
+{
+	size_t len = min(ent->len, PAGE_SIZE_2MB - PGOFF_2MB(ent->base));
 
-// 	iov->base = ent->base;
-// 	iov->maddr = page_get(ent->base);
-// 	iov->len = len;
+	iov->base = ent->base;
+	iov->maddr = page_get(ent->base);
+	iov->len = len;
 
-// 	return len;
-// }
+	return len;
+}
 
 // /**
 //  * mbuf_iov_free - unreferences the IOV memory
 //  * @iov: the IOV
 //  */
-// static inline void mbuf_iov_free(struct mbuf_iov *iov)
-// {
-// 	page_put(iov->base);
-// }
+static inline void mbuf_iov_free(struct mbuf_iov *iov)
+{
+	page_put(iov->base);
+}
 
 struct mbuf {
-	//struct mempool *pool;	/* the pool the mbuf was allocated from */
+	struct mempool *pool;	/* the pool the mbuf was allocated from */
 	size_t len;		/* the length of the mbuf data */
 	struct mbuf *next;	/* the next buffer of the packet
 				 * (can happen with recieve-side coalescing) */
@@ -125,7 +123,7 @@ struct mbuf {
  *
  * Returns an address.
  */
-//#define mbuf_to_iomap(mbuf, pos) mempool_pagemem_to_iomap(mbuf->pool,pos)
+#define mbuf_to_iomap(mbuf, pos) mempool_pagemem_to_iomap(mbuf->pool,pos)
 
 /**
  * iomap_to_mbuf - determines the mbuf pointer based on the IOMAP address
@@ -144,27 +142,27 @@ extern void mbuf_default_done(struct mbuf *m);
  *
  * Returns an mbuf, or NULL if failure.
  */
-// static inline struct mbuf *mbuf_alloc(struct mempool *pool)
-// {
-// 	struct mbuf *m = mempool_alloc(pool);
-// 	if (unlikely(!m))
-// 		return NULL;
+static inline struct mbuf *mbuf_alloc(struct mempool *pool)
+{
+	struct mbuf *m = mempool_alloc(pool);
+	if (unlikely(!m))
+		return NULL;
 
-// 	m->pool = pool;
-// 	m->next = NULL;
-// 	m->done = &mbuf_default_done;
+	m->pool = pool;
+	m->next = NULL;
+	m->done = &mbuf_default_done;
 
-// 	return m;
-// }
+	return m;
+}
 
 /**
  * mbuf_free - frees an mbuf
  * @m: the mbuf
  */
-// static inline void mbuf_free(struct mbuf *m)
-// {
-// 	mempool_free(m->pool, m);
-// }
+static inline void mbuf_free(struct mbuf *m)
+{
+	mempool_free(m->pool, m);
+}
 
 /**
  * mbuf_get_data_machaddr - get the machine address of the mbuf data
@@ -172,10 +170,10 @@ extern void mbuf_default_done(struct mbuf *m);
  *
  * Returns a machine address.
  */
-// static inline machaddr_t mbuf_get_data_machaddr(struct mbuf *m)
-// {
-// 	return page_machaddr(mbuf_mtod(m, void *));
-// }
+static inline unsigned long mbuf_get_data_machaddr(struct mbuf *m)
+{
+	return page_machaddr(mbuf_mtod(m, void *));
+}
 
 /**
  * mbuf_xmit_done - called when a TX queue completes an mbuf
@@ -186,17 +184,17 @@ static inline void mbuf_xmit_done(struct mbuf *m)
 	m->done(m);
 }
 
-// DECLARE_PERCPU(struct mempool, mbuf_mempool);
+DECLARE_PER_CPU(struct mempool, mbuf_mempool);
 
 /**
  * mbuf_alloc_local - allocate an mbuf from the core-local mempool
  *
  * Returns an mbuf, or NULL if out of memory.
  */
-// static inline struct mbuf *mbuf_alloc_local(void)
-// {
-// 	return mbuf_alloc(&percpu_get(mbuf_mempool));
-// }
+static inline struct mbuf *mbuf_alloc_local(void)
+{
+	return mbuf_alloc(this_cpu_ptr(&mbuf_mempool));
+}
 
 extern int mbuf_init(void);
 extern int mbuf_init_cpu(void);

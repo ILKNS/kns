@@ -84,7 +84,6 @@ void *mem_alloc_pages_onnode(int nr, int size, int node, int numa_policy)
  */
 void mem_free_pages(void *addr, int nr, int size)
 {
-	return (void*)(0);
 }
 
 #define PAGEMAP_PGN_MASK	0x7fffffffffffffULL
