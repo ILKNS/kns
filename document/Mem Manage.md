@@ -15,3 +15,5 @@ The actual per cpu isolation, a heap with fixed size memory without lock. A list
 As I am not able to allocate memory with `mmap`, I need to hold all huge pages at once in the lock free ring. Per cpu page table is implemented to hold the page number allocated to them, and the refs table to hold the reference number of each page.
 
 No NUMA is available here, but I still left a empty layer for numa some day to maintain memory affinity.
+
+The mempool is just a porting of it in IX.
