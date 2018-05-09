@@ -27,3 +27,4 @@ Maybe some lock in other functions could be replaced with RCU?
 - [kfifo api](https://lwn.net/Articles/347619/)
 - [lock-free in linux](https://www.ibm.com/developerworks/cn/linux/l-cn-lockfree/)
 - [rcu in linux](https://www.ibm.com/developerworks/cn/linux/l-rcu/)
+- [ring in dpdk](https://dpdk.org/doc/guides/prog_guide/ring_lib.html)
