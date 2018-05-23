@@ -13,4 +13,7 @@ struct eth_fg;
 struct kns_hrtimer{
 	struct hrtimer hrt;
 	int fg_id;
+	struct eth_fg *cur_fg;
 };
+
+extern struct hrtimer gtime;

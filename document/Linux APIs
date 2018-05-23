@@ -1,0 +1,12 @@
+# CPU mask
+cpumask in linux is a bitmap to represent the set of CPU's in a system
+
+## sth wrong
+floating point in kernel
+nr_cpus, cfg.xxx...
+control plane
+rdtsc cycle should not been used here
+hlist differs
+figure out a way to delete hrtimer
+timer is still messing up
+cfg_xxx replaced by actual cpu no.

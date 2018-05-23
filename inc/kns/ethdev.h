@@ -238,7 +238,7 @@ struct rte_eth_rss_reta {
 	uint64_t mask_lo; 
 	/** Second 64 mask bits indicate which entry(s) need to updated/queried. */
 	uint64_t mask_hi; 
-	uint8_t reta[ETH_RSS_RETA_NUM_ENTRIES];  /**< 128 RETA entries*/
+	uint16_t reta[ETH_RSS_RETA_NUM_ENTRIES];  /**< 128 RETA entries*/
 };
 
 /**

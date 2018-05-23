@@ -4,6 +4,8 @@
 
 #include <kns/ethdev.h>
 
+#include <linux/percpu.h>
+
 #include "ixgbe_api.h"
 #include "ixgbe_vf.h"
 #include "ixgbe_dcb.h"
@@ -84,8 +86,7 @@ static void ixgbe_clear_rx_queue(struct rx_queue *rxq)
 
 	for (i = 0; i < rxq->len; i++) {
 		if (rxq->ring_entries[i].mbuf) {
-			//mbuf_free(rxq->ring_entries[i].mbuf);
-			//TODO add mbuf free funs
+			mbuf_free(rxq->ring_entries[i].mbuf);
 			rxq->ring_entries[i].mbuf = NULL;
 		}
 	}
@@ -94,147 +95,147 @@ static void ixgbe_clear_rx_queue(struct rx_queue *rxq)
 	rxq->tail = rxq->len - 1;
 }
 
-// static int ixgbe_alloc_rx_mbufs(struct rx_queue *rxq)
-// {
-// 	int i;
+static int ixgbe_alloc_rx_mbufs(struct rx_queue *rxq)
+{
+	int i;
 
-// 	for (i = 0; i < rxq->len; i++) {
-// 		machaddr_t maddr;
-// 		struct mbuf *b = mbuf_alloc_local();
-// 		if (!b)
-// 			goto fail;
+	for (i = 0; i < rxq->len; i++) {
+		unsigned long maddr;
+		struct mbuf *b = mbuf_alloc_local();
+		if (!b)
+			goto fail;
 
-// 		maddr = mbuf_get_data_machaddr(b);
-// 		rxq->ring_entries[i].mbuf = b;
-// 		rxq->ring[i].read.hdr_addr = cpu_to_le32(maddr);
-// 		rxq->ring[i].read.pkt_addr = cpu_to_le32(maddr);
-// 	}
+		maddr = mbuf_get_data_machaddr(b);
+		rxq->ring_entries[i].mbuf = b;
+		rxq->ring[i].read.hdr_addr = cpu_to_le32(maddr);
+		rxq->ring[i].read.pkt_addr = cpu_to_le32(maddr);
+	}
 
-// 	return 0;
+	return 0;
 
-// fail:
-// 	for (i--; i >= 0; i--)
-// 		mbuf_free(rxq->ring_entries[i].mbuf);
-// 	return -ENOMEM;
-// }
+fail:
+	for (i--; i >= 0; i--)
+		mbuf_free(rxq->ring_entries[i].mbuf);
+	return -ENOMEM;
+}
 
-// static int ixgbe_rx_poll(struct eth_rx_queue *rx)
-// {
-// 	struct rx_queue *rxq = eth_rx_queue_to_drv(rx);
-// 	volatile union ixgbe_adv_rx_desc *rxdp;
-// 	union ixgbe_adv_rx_desc rxd;
-// 	struct mbuf *b, *new_b;
-// 	struct rx_entry *rxqe;
-// 	machaddr_t maddr;
-// 	uint32_t status;
-// 	int nb_descs = 0;
-// 	bool valid_checksum;
-// 	int local_fg_id;
-// 	long timestamp;
+static int ixgbe_rx_poll(struct eth_rx_queue *rx)
+{
+	struct rx_queue *rxq = eth_rx_queue_to_drv(rx);
+	volatile union ixgbe_adv_rx_desc *rxdp;
+	union ixgbe_adv_rx_desc rxd;
+	struct mbuf *b, *new_b;
+	struct rx_entry *rxqe;
+	unsigned long maddr;
+	uint32_t status;
+	int nb_descs = 0;
+	bool valid_checksum;
+	int local_fg_id;
+	long timestamp;
 
-// 	timestamp = rdtsc();
-// 	while (1) {
-// 		rxdp = &rxq->ring[rxq->head & (rxq->len - 1)];
-// 		status = le32_to_cpu(rxdp->wb.upper.status_error);
-// 		valid_checksum = true;
+	timestamp = rdtsc();
+	while (1) {
+		rxdp = &rxq->ring[rxq->head & (rxq->len - 1)];
+		status = le32_to_cpu(rxdp->wb.upper.status_error);
+		valid_checksum = true;
 
-// 		if (!(status & IXGBE_RXDADV_STAT_DD))
-// 			break;
+		if (!(status & IXGBE_RXDADV_STAT_DD))
+			break;
 
-// 		rxd = *rxdp;
-// 		rxqe = &rxq->ring_entries[rxq->head & (rxq->len -1)];
+		rxd = *rxdp;
+		rxqe = &rxq->ring_entries[rxq->head & (rxq->len -1)];
 
-// 		/* Check IP checksum calculated by hardware (if applicable) */
-// 		if (unlikely((rxdp->wb.upper.status_error & IXGBE_RXD_STAT_IPCS) &&
-// 			     (rxdp->wb.upper.status_error & IXGBE_RXDADV_ERR_IPE))) {
-// 			log_err("ixgbe: IP RX checksum error, dropping pkt\n");
-// 			valid_checksum = false;
-// 		}
+		/* Check IP checksum calculated by hardware (if applicable) */
+		if (unlikely((rxdp->wb.upper.status_error & IXGBE_RXD_STAT_IPCS) &&
+			     (rxdp->wb.upper.status_error & IXGBE_RXDADV_ERR_IPE))) {
+			printk(KERN_ERR"ixgbe: IP RX checksum error, dropping pkt\n");
+			valid_checksum = false;
+		}
 
-// 		/* Check TCP checksum calculated by hardware (if applicable) */
-// 		if (unlikely((rxdp->wb.upper.status_error & IXGBE_RXD_STAT_L4CS) &&
-// 			     (rxdp->wb.upper.status_error & IXGBE_RXDADV_ERR_TCPE))) {
-// 			log_err("ixgbe: TCP RX checksum error, dropping pkt\n");
-// 			valid_checksum = false;
-// 		}
+		/* Check TCP checksum calculated by hardware (if applicable) */
+		if (unlikely((rxdp->wb.upper.status_error & IXGBE_RXD_STAT_L4CS) &&
+			     (rxdp->wb.upper.status_error & IXGBE_RXDADV_ERR_TCPE))) {
+			printk(KERN_ERR"ixgbe: TCP RX checksum error, dropping pkt\n");
+			valid_checksum = false;
+		}
 
-// 		b = rxqe->mbuf;
-// 		b->len = le32_to_cpu(rxd.wb.upper.length);
-// 		local_fg_id = (le32_to_cpu(rxd.wb.lower.hi_dword.rss) &
-// 				        (ETH_RSS_RETA_NUM_ENTRIES - 1));
-// 		b->fg_id = rx->dev->data->rx_fgs[local_fg_id].fg_id;
-// 		b->timestamp = timestamp;
+		b = rxqe->mbuf;
+		b->len = le32_to_cpu(rxd.wb.upper.length);
+		local_fg_id = (le32_to_cpu(rxd.wb.lower.hi_dword.rss) &
+				        (ETH_RSS_RETA_NUM_ENTRIES - 1));
+		b->fg_id = rx->dev->data->rx_fgs[local_fg_id].fg_id;
+		b->timestamp = timestamp;
 
-// 		new_b = mbuf_alloc_local();
-// 		if (unlikely(!new_b)) {
-// 			log_err("ixgbe: unable to allocate RX mbuf\n");
-// 			goto out;
-// 		}
+		new_b = mbuf_alloc_local();
+		if (unlikely(!new_b)) {
+			printk(KERN_ERR"ixgbe: unable to allocate RX mbuf\n");
+			goto out;
+		}
 
-// 		maddr = mbuf_get_data_machaddr(new_b);
-// 		rxqe->mbuf = new_b;
-// 		rxdp->read.hdr_addr = cpu_to_le32(maddr);
-// 		rxdp->read.pkt_addr = cpu_to_le32(maddr);
+		maddr = mbuf_get_data_machaddr(new_b);
+		rxqe->mbuf = new_b;
+		rxdp->read.hdr_addr = cpu_to_le32(maddr);
+		rxdp->read.pkt_addr = cpu_to_le32(maddr);
 
-// 		if (unlikely(!valid_checksum || eth_recv(rx, b))) {
-// 			log_info("ixgbe: dropping packet\n");
-// 			mbuf_free(b);
-// 		}
+		if (unlikely(!valid_checksum || eth_recv(rx, b))) {
+			printk(KERN_INFO"ixgbe: dropping packet\n");
+			mbuf_free(b);
+		}
 
-// 		rxq->head++;
-// 		nb_descs++;
-// 	}
+		rxq->head++;
+		nb_descs++;
+	}
 
-// out:
+out:
 
-// 	/*
-// 	 * We threshold updates to the RX tail register because when it
-// 	 * is updated too frequently (e.g. when written to on multiple
-// 	 * cores even through separate queues) PCI performance
-// 	 * bottlnecks have been observed.
-// 	 */
-// 	if ((uint16_t) (rxq->len - (rxq->tail + 1 - rxq->head)) >=
-// 	    IXGBE_RDT_THRESH) {
-// 		rxq->tail = rxq->head + rxq->len - 1;
+	/*
+	 * We threshold updates to the RX tail register because when it
+	 * is updated too frequently (e.g. when written to on multiple
+	 * cores even through separate queues) PCI performance
+	 * bottlnecks have been observed.
+	 */
+	if ((uint16_t) (rxq->len - (rxq->tail + 1 - rxq->head)) >=
+	    IXGBE_RDT_THRESH) {
+		rxq->tail = rxq->head + rxq->len - 1;
 
-// 		/* inform HW that more descriptors have become available */
-// 		IXGBE_PCI_REG_WRITE(rxq->rdt_reg_addr,
-// 				    (rxq->tail & (rxq->len - 1)));
-// 	}
+		/* inform HW that more descriptors have become available */
+		IXGBE_PCI_REG_WRITE(rxq->rdt_reg_addr,
+				    (rxq->tail & (rxq->len - 1)));
+	}
 
-// 	return nb_descs;
-// }
+	return nb_descs;
+}
 
-// /* FIXME: make this driver independent */
-// bool eth_rx_idle_wait(uint64_t usecs)
-// {
-// 	volatile union ixgbe_adv_rx_desc **addrs;
-// 	unsigned int i;
-// 	unsigned long start, cycles = usecs * cycles_per_us;
+/* FIXME: make this driver independent */
+bool eth_rx_idle_wait(uint64_t usecs)
+{
+	volatile union ixgbe_adv_rx_desc **addrs;
+	unsigned int i;
+	unsigned long start, cycles /*= usecs * cycles_per_us*/;
 
-// 	addrs = alloca(sizeof(union ixgbe_adv_rx_desc *) *
-// 		       percpu_get(eth_num_queues));
+	addrs = kmalloc(sizeof(union ixgbe_adv_rx_desc *) *
+		       this_cpu_read(eth_num_queues), GFP_KERNEL);
 
-// 	for (i=0;i<percpu_get(eth_num_queues);i++) {
-// 		struct eth_rx_queue *rx = percpu_get(eth_rxqs[i]);
-// 		struct rx_queue *rxq = eth_rx_queue_to_drv(rx);
-// 		addrs[i] = &rxq->ring[rxq->head & (rxq->len - 1)];
-// 	}
+	for (i=0;i < __this_cpu_read(eth_num_queues);i++) {
+		struct eth_rx_queue *rx = this_cpu_ptr(eth_rxqs[i]);
+		struct rx_queue *rxq = eth_rx_queue_to_drv(rx);
+		addrs[i] = &rxq->ring[rxq->head & (rxq->len - 1)];
+	}
 
-// 	start = rdtsc();
+	start = rdtsc();
 
-// 	do {
-// 		for (i = 0; i < percpu_get(eth_num_queues); i++) {
-// 			if (addrs[i]->wb.upper.status_error &
-// 			    cpu_to_le32(IXGBE_RXDADV_STAT_DD))
-// 				return true;
-// 		}
+	do {
+		for (i = 0; i < __this_cpu_read(eth_num_queues); i++) {
+			if (addrs[i]->wb.upper.status_error &
+			    cpu_to_le32(IXGBE_RXDADV_STAT_DD))
+				return true;
+		}
 
-// 		cpu_relax();
-// 	} while (rdtsc() - start < cycles);
+		cpu_relax();
+	} while (rdtsc() - start < cycles);
 
-// 	return false;
-// }
+	return false;
+}
 
 /**
  * ixgbe_dev_rx_queue_setup - prepares an RX queue

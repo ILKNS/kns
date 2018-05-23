@@ -5,12 +5,10 @@
 #pragma once
 
 #include <linux/list.h>
-// #include <ix/lock.h>
+#include <linux/cpumask.h>
 #include <kns/hrtimer.h>
 
-#include <linux/list.h>
-
-#define ETH_MAX_NUM_FG	128 
+#define ETH_MAX_NUM_FG	512
 
 #define NETHDEV	16
 #define ETH_MAX_TOTAL_FG (ETH_MAX_NUM_FG * NETHDEV)
@@ -29,11 +27,11 @@ struct tcp_hash_entry {
 
 struct eth_fg {
 	uint16_t        fg_id;          /* self */
-	bool		in_transition;	/* is the fg being migrated? */
+	bool			in_transition;	/* is the fg being migrated? */
 	unsigned int	cur_cpu;	/* the current CPU */
 	unsigned int	target_cpu;	/* the migration target CPU */
 	unsigned int	prev_cpu;
-	unsigned int	idx;		/* the flow index */
+	uint16_t		idx;		/* the flow index */
 	unsigned int	dev_idx;
 
 	spinlock_t	lock;		/* protects fg data during migration */
@@ -62,6 +60,7 @@ struct eth_fg {
 struct eth_fg_listener {
 	void (*prepare)	(struct eth_fg *fg);	/* called before a migration */
 	void (*finish)	(struct eth_fg *fg);	/* called after a migration */
+
 	struct list_head n;
 };
 
@@ -97,43 +96,61 @@ static inline void unset_current_fg(void)
 extern void eth_fg_init(struct eth_fg *fg, unsigned int idx);
 extern int eth_fg_init_cpu(struct eth_fg *fg);
 extern void eth_fg_free(struct eth_fg *fg);
-extern void eth_fg_assign_to_cpu(bitmap_ptr fg_bitmap, int cpu);
+extern void eth_fg_assign_to_cpu(unsigned long * fg_bitmap, int cpu);
 
 extern int nr_flow_groups;
 
-extern struct eth_fg *fgs[ETH_MAX_TOTAL_FG];
+extern struct eth_fg *fgs[ETH_MAX_TOTAL_FG + NR_CPUS];
 
+static inline int outbound_fg_idx(void)
+{
+	return ETH_MAX_TOTAL_FG + smp_processor_id();
+}
 
-// static inline struct eth_fg *get_ethfg_from_id(int fg_id)
-// {
-// 	if (fg_id<0) 
-// 		return NULL;
-// 	else 
-// 		return fgs[fg_id];
-// }
+static inline int outbound_fg_idx_remote(int cpu)
+{
+	return ETH_MAX_TOTAL_FG + cpu;
+}
 
-// /**                                                                                                                                                                         
-//  * for_each_active_fg -- iterates over all fg owned by this cpu
-//  * @fgid: integer to store the fg
-//  *                                                                                                                                                                           */
+static inline struct eth_fg *outbound_fg(void)
+{
+	return fgs[outbound_fg_idx()];
+}
 
-// static inline unsigned int __fg_next_active(unsigned int fgid)
-// {
-//         while (fgid < nr_flow_groups) {
-//                 fgid++;
+static inline struct eth_fg *outbound_fg_remote(int cpu)
+{
+	return fgs[outbound_fg_idx_remote(cpu)];
+}
 
-//                 if (fgs[fgid]->cur_cpu == percpu_get(cpu_id))
-//                         return fgid;
-//         }
+static inline struct eth_fg *get_ethfg_from_id(int fg_id)
+{
+	if (fg_id<0) 
+		return NULL;
+	else 
+		return fgs[fg_id];
+}
 
-//         return fgid;
-// }
+/**                                                                                                                                                                         
+ * for_each_active_fg -- iterates over all fg owned by this cpu
+ * @fgid: integer to store the fg
+ *                                                                                                                                                                           */
 
-/*#define for_each_active_fg(fgid)                                \
+static inline unsigned int __fg_next_active(unsigned int fgid)
+{
+        while (fgid < nr_flow_groups) {
+            fgid++;
+            if (fgs[fgid]->cur_cpu == smp_processor_id())
+                return fgid;
+        }
+
+        return fgid;
+}
+
+#define for_each_active_fg(fgid)                                \
         for ((fgid) = -1; (fgid) = __fgid_next_active(fgid); (fgid) < nr_flow_groups)
-*/
+
 // DECLARE_PERCPU(unsigned int, cpu_numa_node);
 
-// struct mbuf;
+struct mbuf;
 
-// int eth_recv_handle_fg_transition(struct eth_rx_queue *rx_queue, struct mbuf *pkt);
+int eth_recv_handle_fg_transition(struct eth_rx_queue *rx_queue, struct mbuf *pkt);

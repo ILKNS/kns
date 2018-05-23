@@ -34,14 +34,16 @@ mbuf_iov_create(struct mbuf_iov *iov, struct sg_entry *ent)
 	return len;
 }
 
-// /**
-//  * mbuf_iov_free - unreferences the IOV memory
-//  * @iov: the IOV
-//  */
+/**
+* mbuf_iov_free - unreferences the IOV memory
+* @iov: the IOV
+*/
 static inline void mbuf_iov_free(struct mbuf_iov *iov)
 {
 	page_put(iov->base);
 }
+
+#define MBUF_INVALID_FG_ID 0xFFFF
 
 struct mbuf {
 	struct mempool *pool;	/* the pool the mbuf was allocated from */
