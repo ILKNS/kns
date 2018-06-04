@@ -35,11 +35,6 @@
 /* Power measurement period (in us) */
 #define POWER_PERIOD_US 500000
 
-#define EMA_SMOOTH_FACTOR_0 0.5
-#define EMA_SMOOTH_FACTOR_1 0.25
-#define EMA_SMOOTH_FACTOR_2 0.125
-#define EMA_SMOOTH_FACTOR 	EMA_SMOOTH_FACTOR_0
-
 DEFINE_PER_CPU(int, eth_num_queues);
 DEFINE_PER_CPU(struct eth_rx_queue *, eth_rxqs[NETHDEV]);
 DEFINE_PER_CPU(struct eth_tx_queue *, eth_txqs[NETHDEV]);
@@ -121,8 +116,8 @@ int eth_process_recv(void)
 	int value;
 	struct metrics_accumulator *this_metrics_acc = this_cpu_ptr(&metrics_acc);
 	int backlog;
-// 	double idle;
-	unsigned int energy;
+	int idle;
+	unsigned long long energy;
 	int energy_diff;
 
 	/*
@@ -151,62 +146,62 @@ int eth_process_recv(void)
 		backlog += this_cpu_ptr(eth_rxqs[i])->len;
 
 	timestamp = rdtsc();
-// 	this_metrics_acc->count++;
-// 	value = count ? (timestamp - min_timestamp) / cycles_per_us : 0;
-// 	this_metrics_acc->queuing_delay += value;
-// 	this_metrics_acc->batch_size += count;
-// 	this_metrics_acc->queue_size += count + backlog;
-// 	this_metrics_acc->loop_duration += timestamp - this_metrics_acc->prv_timestamp;
-// 	this_metrics_acc->prv_timestamp = timestamp;
-// 	if (timestamp - this_metrics_acc->timestamp > (long) cycles_per_us * METRICS_PERIOD_US) {
-// 		idle = (double) percpu_get(idle_cycles) / (timestamp - this_metrics_acc->timestamp);
-// 		EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].idle[0], idle, EMA_SMOOTH_FACTOR_0);
-// 		EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].idle[1], idle, EMA_SMOOTH_FACTOR_1);
-// 		EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].idle[2], idle, EMA_SMOOTH_FACTOR_2);
-// 		if (this_metrics_acc->count) {
-// 			this_metrics_acc->loop_duration -= percpu_get(idle_cycles);
-// 			this_metrics_acc->loop_duration /= cycles_per_us;
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queuing_delay, (double) this_metrics_acc->queuing_delay / this_metrics_acc->count, EMA_SMOOTH_FACTOR);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].batch_size, (double) this_metrics_acc->batch_size / this_metrics_acc->count, EMA_SMOOTH_FACTOR);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[0], (double) this_metrics_acc->queue_size / this_metrics_acc->count, EMA_SMOOTH_FACTOR_0);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[1], (double) this_metrics_acc->queue_size / this_metrics_acc->count, EMA_SMOOTH_FACTOR_1);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[2], (double) this_metrics_acc->queue_size / this_metrics_acc->count, EMA_SMOOTH_FACTOR_2);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].loop_duration, (double) this_metrics_acc->loop_duration / this_metrics_acc->count, EMA_SMOOTH_FACTOR_0);
-// 		} else {
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queuing_delay, 0, EMA_SMOOTH_FACTOR);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].batch_size, 0, EMA_SMOOTH_FACTOR);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[0], 0, EMA_SMOOTH_FACTOR_0);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[1], 0, EMA_SMOOTH_FACTOR_1);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].queue_size[2], 0, EMA_SMOOTH_FACTOR_2);
-// 			EMA_UPDATE(cp_shmem->cpu_metrics[percpu_get(cpu_nr)].loop_duration, 0, EMA_SMOOTH_FACTOR_0);
-// 		}
-// 		this_metrics_acc->timestamp = timestamp;
-// 		percpu_get(idle_cycles) = 0;
-// 		this_metrics_acc->count = 0;
-// 		this_metrics_acc->queuing_delay = 0;
-// 		this_metrics_acc->batch_size = 0;
-// 		this_metrics_acc->queue_size = 0;
-// 		this_metrics_acc->loop_duration = 0;
-// 	}
-// 	/* NOTE: assuming that the first CPU never idles */
-// 	if (percpu_get(cpu_nr) == 0 && timestamp - power_acc.prv_timestamp > (long) cycles_per_us * POWER_PERIOD_US) {
-// 		energy = rdmsr(MSR_PKG_ENERGY_STATUS);
-// 		if (power_acc.prv_timestamp) {
-// 			energy_diff = energy - power_acc.prv_energy;
-// 			if (energy_diff < 0)
-// 				energy_diff += 1 << 31;
-// 			cp_shmem->pkg_power = (double) energy_diff * energy_unit / (timestamp - power_acc.prv_timestamp) * cycles_per_us * 1000000;
-// 		} else {
-// 			cp_shmem->pkg_power = 0;
-// 		}
-// 		power_acc.prv_timestamp = timestamp;
-// 		power_acc.prv_energy = energy;
-// 	}
+	this_metrics_acc->count++;
+	value = count ? (timestamp - min_timestamp) * 1000 / cpu_khz : 0;
+	this_metrics_acc->queuing_delay += value;
+	this_metrics_acc->batch_size += count;
+	this_metrics_acc->queue_size += count + backlog;
+	this_metrics_acc->loop_duration += timestamp - this_metrics_acc->prv_timestamp;
+	this_metrics_acc->prv_timestamp = timestamp;
+	if (timestamp - this_metrics_acc->timestamp > (long) cpu_khz / 1000 * METRICS_PERIOD_US) {
+		idle = __this_cpu_read(idle_cycles) / (timestamp - this_metrics_acc->timestamp);
+		ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].idle[0], idle);//EMA_SMOOTH_FACTOR_0
+		ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].idle[1], idle);//EMA_SMOOTH_FACTOR_1
+		ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].idle[2], idle);//EMA_SMOOTH_FACTOR_2
+		if (this_metrics_acc->count) {
+			this_metrics_acc->loop_duration -= __this_cpu_read(idle_cycles);
+			this_metrics_acc->loop_duration /= (cpu_khz / 1000);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queuing_delay, this_metrics_acc->queuing_delay / this_metrics_acc->count);//EMA_SMOOTH_FACTOR);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].batch_size, this_metrics_acc->batch_size / this_metrics_acc->count);//EMA_SMOOTH_FACTOR);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[0], this_metrics_acc->queue_size / this_metrics_acc->count);// EMA_SMOOTH_FACTOR_0);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[1], this_metrics_acc->queue_size / this_metrics_acc->count);// EMA_SMOOTH_FACTOR_1);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[2], this_metrics_acc->queue_size / this_metrics_acc->count);// EMA_SMOOTH_FACTOR_2);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].loop_duration, this_metrics_acc->loop_duration / this_metrics_acc->count);// EMA_SMOOTH_FACTOR_0);
+		} else {
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queuing_delay, 0);// EMA_SMOOTH_FACTOR);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].batch_size, 0);// EMA_SMOOTH_FACTOR);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[0], 0);// EMA_SMOOTH_FACTOR_0);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[1], 0);// EMA_SMOOTH_FACTOR_1);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].queue_size[2], 0);// EMA_SMOOTH_FACTOR_2);
+			ewma_add(&cp_shmem->cpu_metrics[smp_processor_id()].loop_duration, 0);// EMA_SMOOTH_FACTOR_0);
+		}
+		this_metrics_acc->timestamp = timestamp;
+		__this_cpu_write(idle_cycles, 0);
+		this_metrics_acc->count = 0;
+		this_metrics_acc->queuing_delay = 0;
+		this_metrics_acc->batch_size = 0;
+		this_metrics_acc->queue_size = 0;
+		this_metrics_acc->loop_duration = 0;
+	}
+	/* NOTE: assuming that the first CPU never idles */
+	if (smp_processor_id() == 0 && timestamp - power_acc.prv_timestamp > (long) cpu_khz / 1000 * POWER_PERIOD_US) {
+		energy = native_read_msr(MSR_PKG_ENERGY_STATUS);
+		if (power_acc.prv_timestamp) {
+			energy_diff = energy - power_acc.prv_energy;
+			if (energy_diff < 0)
+				energy_diff += 1 << 31;
+			cp_shmem->pkg_power = energy_diff * energy_unit / (timestamp - power_acc.prv_timestamp) * cpu_khz / 1000 * 1000000 *1000;
+		} else {
+			cp_shmem->pkg_power = 0;
+		}
+		power_acc.prv_timestamp = timestamp;
+		power_acc.prv_energy = energy;
+	}
 
 // 	KSTATS_PACKETS_INC(count);
 // 	KSTATS_BATCH_INC(count);
 // #ifdef ENABLE_KSTATS
-// 	backlog = div_up(backlog, eth_rx_max_batch);
+	backlog = round_up(backlog, eth_rx_max_batch)/eth_rx_max_batch;
 // 	KSTATS_BACKLOG_INC(backlog);
 // #endif
 

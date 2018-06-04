@@ -240,7 +240,7 @@ int mempool_create_datastore(struct mempool_datastore *mds, int nr_elems, size_t
  *
  * Returns 0 if successful, otherwise fail.
  */
-int mempool_create(struct mempool *m, struct mempool_datastore *mds, int16_t sanity_type, int16_t sanity_id)
+int kns_mempool_create(struct mempool *m, struct mempool_datastore *mds, int16_t sanity_type, int16_t sanity_id)
 {
 	if (mds->magic != MEMPOOL_MAGIC)
 		printk(KERN_ERR"mempool_create when datastore does not exist\n");

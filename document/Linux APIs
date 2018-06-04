@@ -10,3 +10,9 @@ hlist differs
 figure out a way to delete hrtimer
 timer is still messing up
 cfg_xxx replaced by actual cpu no.
+cpu_nr replaced by processor_id, don't know if right
+cpu_khz to replace cycles_per_us might be wrong
+cpu_metric need ewma_init first when define
+pkg_power and energy_unit set to unsigned long and mult 1000
+BUG_ON except arp.c
+addr in udp.c

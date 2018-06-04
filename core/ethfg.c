@@ -73,11 +73,10 @@ static void enqueue(struct queue *q, struct mbuf *pkt);
 
 int init_migration_cpu(void)
 {
-	struct migration_info this_info = get_cpu_var(migration_info);
-	hrtimer_init(&this_info.transition_timeout.hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	this_info.transition_timeout.hrt.function = transition_handler_prev;
-	this_info.prev_cpu = -1;
-	put_cpu_ptr(migration_info);
+	struct migration_info *this_info = this_cpu_ptr(&migration_info);
+	hrtimer_init(&this_info->transition_timeout.hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	this_info->transition_timeout.hrt.function = transition_handler_prev;
+	this_info->prev_cpu = -1;
 
 	return 0;
 }
@@ -219,13 +218,15 @@ static void migrate_fdir(struct rte_eth_dev *dev, struct eth_fg *cur_fg,
 void eth_fg_assign_to_cpu(unsigned long * fg_bitmap, int cpu)
 {
 	int i, j;
-	struct rte_eth_rss_reta rss_reta[NETHDEV];
+	struct rte_eth_rss_reta *rss_reta;
 	struct rte_eth_dev *eth[NETHDEV], *first_eth;
 	int ret;
 	int real = 0;
 	int count;
 	int migrate;
 	struct mbuf *pkt;
+
+	rss_reta = kmalloc(sizeof(struct rte_eth_rss_reta) * NETHDEV, GFP_KERNEL);
 
 	count = 0;
 	for (i = 0; i < __this_cpu_read(eth_num_queues); i++)
@@ -360,7 +361,7 @@ static struct eth_rx_queue *queue_from_fg(struct eth_fg *fg)
 			return rxq;
 	}
 
-	BUG_ON(false);
+	BUG_ON(1);
 }
 
 static void transition_handler_target(void *info_)
@@ -468,6 +469,8 @@ static void enqueue(struct queue *q, struct mbuf *pkt)
 
 void eth_recv_at_prev(struct eth_rx_queue *rx_queue, struct mbuf *pkt)
 {
+	struct eth_fg *fg;
+	struct queue *q;
 	if (SCRATCHPAD->ts_last_pkt_at_prev == 0) {
 		SCRATCHPAD->ts_last_pkt_at_prev = rdtsc();
 		SCRATCHPAD->ts_first_pkt_at_prev = SCRATCHPAD->ts_last_pkt_at_prev;
@@ -475,13 +478,14 @@ void eth_recv_at_prev(struct eth_rx_queue *rx_queue, struct mbuf *pkt)
 		SCRATCHPAD->ts_last_pkt_at_prev = rdtsc();
 	}
 
-	struct eth_fg *fg = fgs[pkt->fg_id];
-	struct queue *q = per_cpu_ptr(&remote_mbuf_queue, fg->target_cpu);
+	fg = fgs[pkt->fg_id];
+	q = per_cpu_ptr(&remote_mbuf_queue, fg->target_cpu);
 	enqueue(q, pkt);
 }
 
 void eth_recv_at_target(struct eth_rx_queue *rx_queue, struct mbuf *pkt)
 {
+	struct queue *q;
 	if (SCRATCHPAD->ts_last_pkt_at_target == 0) {
 		SCRATCHPAD->ts_last_pkt_at_target = rdtsc();
 		SCRATCHPAD->ts_first_pkt_at_target = SCRATCHPAD->ts_last_pkt_at_target;
@@ -489,7 +493,7 @@ void eth_recv_at_target(struct eth_rx_queue *rx_queue, struct mbuf *pkt)
 		SCRATCHPAD->ts_last_pkt_at_target = rdtsc();
 	}
 
-	struct queue *q = this_cpu_ptr(&local_mbuf_queue);
+	q = this_cpu_ptr(&local_mbuf_queue);
 	if (!q->head) {
 		/*
 		 * When we receive the first packet on the target CPU, we cause

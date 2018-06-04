@@ -5,7 +5,7 @@ ifneq ($(KERNELRELEASE),)
 	SRC  := $(subst $(PWD)/,,$(shell find $(PWD) -name "*.c"))
 	OBJS-1  := $(subst .c,.o,$(SRC))
 	OBJS  := $(filter-out user/hugepage_user.o, $(OBJS-1))
-	obj-y			:=  ixgbe/ core/
+	obj-y			:=  ixgbe/ core/ net/
 	obj-m 			+=  kns.o
 	kns-objs		:=  init.o $(OBJS)
 else

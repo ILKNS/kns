@@ -7,7 +7,7 @@
 #include <kns/mem.h>
 #include <kns/mempool.h>
 #include <kns/page.h>
-#include <kns/sg.h>
+#include <kns/syscall.h>
 
 struct mbuf_iov {
 	void *base;
@@ -134,7 +134,7 @@ struct mbuf {
  *
  * Returns an address.
  */
-//#define iomap_to_mbuf(pool, pos) mempool_iomap_to_ptr(pool,pos)
+#define iomap_to_mbuf(pool, pos) mempool_iomap_to_ptr(pool,pos)
 
 extern void mbuf_default_done(struct mbuf *m);
 
@@ -146,7 +146,7 @@ extern void mbuf_default_done(struct mbuf *m);
  */
 static inline struct mbuf *mbuf_alloc(struct mempool *pool)
 {
-	struct mbuf *m = mempool_alloc(pool);
+	struct mbuf *m = kns_mempool_alloc(pool);
 	if (unlikely(!m))
 		return NULL;
 
@@ -163,7 +163,7 @@ static inline struct mbuf *mbuf_alloc(struct mempool *pool)
  */
 static inline void mbuf_free(struct mbuf *m)
 {
-	mempool_free(m->pool, m);
+	kns_mempool_free(m->pool, m);
 }
 
 /**

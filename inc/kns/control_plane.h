@@ -26,15 +26,21 @@
  */
 
 #include <kns/ethfg.h>
+#include <kns/average.h>
 
 #define IDLE_FIFO_SIZE 256
 
+#define EMA_SMOOTH_FACTOR_0 2
+#define EMA_SMOOTH_FACTOR_1 4
+#define EMA_SMOOTH_FACTOR_2 8
+#define EMA_SMOOTH_FACTOR EMA_SMOOTH_FACTOR_0
+
 struct cpu_metrics {
-	double queuing_delay;
-	double batch_size;
-	double queue_size[3];
-	long loop_duration;
-	double idle[3];
+	struct ewma queuing_delay;
+	struct ewma batch_size;
+	struct ewma queue_size[3];
+	struct ewma loop_duration;
+	struct ewma idle[3];
 } __aligned(64);
 
 struct flow_group_metrics {
@@ -76,7 +82,7 @@ struct command_struct {
 extern volatile struct cp_shmem {
 	uint32_t nr_flow_groups;
 	uint32_t nr_cpus;
-	float pkg_power;
+	unsigned long pkg_power;
 	int cpu[NR_CPUS];
 	struct cpu_metrics cpu_metrics[NR_CPUS];
 	struct flow_group_metrics flow_group[ETH_MAX_TOTAL_FG];
@@ -112,11 +118,4 @@ DECLARE_PER_CPU(unsigned long, idle_cycles);
 
 void cp_idle(void);
 
-static inline int ema_update(int prv_value, int value, int alpha)
-{
-	return (alpha * value + (100 - alpha) * prv_value)/100;
-}
-
-#define EMA_UPDATE(ema, value, alpha) ema = ema_update(ema, value, alpha)
-
-extern double energy_unit;
+extern unsigned long energy_unit;

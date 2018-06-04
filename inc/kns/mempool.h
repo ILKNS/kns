@@ -128,7 +128,7 @@ static inline int __mempool_get_sanity(void *a) {
  * Returns a pointer to the allocated element or NULL if unsuccessful.
  */
 extern void *mempool_alloc_2(struct mempool *m);
-static inline void *mempool_alloc(struct mempool *m)
+static inline void *kns_mempool_alloc(struct mempool *m)
 {
 	struct mempool_hdr *h = m->head;
 
@@ -149,7 +149,7 @@ static inline void *mempool_alloc(struct mempool *m)
  * NOTE: Must be the same memory pool that it was allocated from
  */
 extern void mempool_free_2(struct mempool *m, void *ptr);
-static inline void mempool_free(struct mempool *m, void *ptr)
+static inline void kns_mempool_free(struct mempool *m, void *ptr)
 {
 	struct mempool_hdr *elem = (struct mempool_hdr *) ptr;
 	MEMPOOL_SANITY_ACCESS(ptr);
@@ -182,8 +182,8 @@ static inline uintptr_t mempool_ptr_to_idx(struct mempool *m,void *p, int elem_l
 
 
 extern int mempool_create_datastore(struct mempool_datastore *m, int nr_elems, size_t elem_len, int nostraddle, int chunk_size, const char *prettyname);
-extern int mempool_create(struct mempool *m, struct mempool_datastore *mds, int16_t sanity_type, int16_t sanity_id);
-extern void mempool_destroy(struct mempool *m);
+extern int kns_mempool_create(struct mempool *m, struct mempool_datastore *mds, int16_t sanity_type, int16_t sanity_id);
+extern void kns_mempool_destroy(struct mempool *m);
 
 
 #ifdef __KERNEL__

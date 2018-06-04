@@ -29,7 +29,7 @@ void mbuf_default_done(struct mbuf *m)
 int mbuf_init_cpu(void)
 {
 	struct mempool *m = this_cpu_ptr(&mbuf_mempool);
-	return mempool_create(m, &mbuf_datastore, MEMPOOL_SANITY_PERCPU,smp_processor_id());
+	return kns_mempool_create(m, &mbuf_datastore, MEMPOOL_SANITY_PERCPU,smp_processor_id());
 }
 
 /**

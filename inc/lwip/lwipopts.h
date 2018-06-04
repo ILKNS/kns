@@ -23,7 +23,7 @@
 
 #define LWIP_IX
 
-#include <linux/byteorder/generic.h>
+//#include <linux/byteorder/generic.h>
 
 #define LWIP_PLATFORM_BYTESWAP	1
 #define LWIP_PLATFORM_HTONS(x) ___htons(x)
